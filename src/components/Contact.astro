@@ -1,0 +1,66 @@
+---
+const email = 'you@example.com';
+const linkedin = 'https://www.linkedin.com/in/your-handle/';
+const linkedinDisplay = linkedin.replace(/^https?:\/\/(www\.)?/, '');
+---
+
+<section id="contact" class="contact">
+  <div class="contact__inner">
+    <h2 class="contact__heading">Contact</h2>
+    <dl class="contact__list">
+      <dt>Email</dt>
+      <dd><a href={`mailto:${email}`}>{email}</a></dd>
+      <dt>LinkedIn</dt>
+      <dd><a href={linkedin} rel="me noreferrer">{linkedinDisplay}</a></dd>
+    </dl>
+  </div>
+</section>
+
+<style>
+  .contact {
+    padding-block: 64px 80px;
+    padding-inline: max(24px, calc((100% - var(--container-gallery)) / 2 + 24px));
+    border-top: 1px solid var(--color-line);
+  }
+
+  .contact__inner {
+    max-width: var(--container-text);
+  }
+
+  .contact__heading {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 400;
+    margin: 0 0 24px 0;
+    letter-spacing: -0.01em;
+  }
+
+  .contact__list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 24px;
+    row-gap: 12px;
+    margin: 0;
+  }
+
+  .contact__list dt {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-ink-soft);
+    margin: 0;
+    align-self: baseline;
+  }
+
+  .contact__list dd {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 600px) {
+    .contact {
+      padding-block: 44px 56px;
+    }
+  }
+</style>

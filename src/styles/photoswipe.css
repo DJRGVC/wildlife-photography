@@ -1,0 +1,58 @@
+.pswp {
+  --pswp-bg: rgba(10, 10, 10, 0.96);
+  --pswp-icon-color: #fafaf7;
+  --pswp-icon-color-secondary: #1a1a1a;
+}
+
+.pswp__bg {
+  transition: opacity 250ms ease;
+}
+
+.pswp__dynamic-caption {
+  color: #ddd9d0;
+  font-family: var(--font-sans);
+}
+
+.pswp__dynamic-caption .caption__title {
+  color: #fafaf7;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 0 0 0.6em 0;
+  font-weight: 400;
+}
+
+.pswp__dynamic-caption .caption__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13px;
+  color: #cdc8bf;
+  margin-bottom: 0.5em;
+}
+
+.pswp__dynamic-caption .caption__exif {
+  font-size: 12px;
+  color: #989488;
+  letter-spacing: 0.01em;
+}
+
+.pswp__dynamic-caption--aside {
+  width: 280px;
+  padding: 28px 28px 28px 24px;
+  background: transparent;
+}
+
+.pswp__dynamic-caption--below {
+  max-width: 100%;
+  padding: 14px 20px 22px;
+}
+
+@media (max-width: 600px) {
+  .pswp__dynamic-caption .caption__title {
+    font-size: 18px;
+  }
+  .pswp__dynamic-caption .caption__meta {
+    font-size: 12px;
+  }
+}

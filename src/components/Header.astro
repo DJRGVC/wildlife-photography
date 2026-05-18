@@ -1,0 +1,100 @@
+---
+const name = 'Daniel Grant';
+---
+
+<div id="header-sentinel" aria-hidden="true"></div>
+<header id="site-header" class="site-header">
+  <div class="site-header__inner">
+    <a href="#top" class="site-header__name">{name}</a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="#bio">Bio</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  #header-sentinel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: var(--color-cream);
+    padding-block: 56px 32px;
+    padding-inline: max(24px, calc((100% - var(--container-gallery)) / 2 + 24px));
+    border-bottom: 1px solid transparent;
+    transition: padding 250ms ease, border-color 250ms ease;
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .site-header__name {
+    font-family: var(--font-serif);
+    font-size: 44px;
+    line-height: 1.05;
+    letter-spacing: -0.012em;
+    text-decoration: none;
+    transition: font-size 250ms ease;
+  }
+
+  .site-header__name:hover {
+    text-decoration: none;
+  }
+
+  .site-header__nav {
+    display: flex;
+    gap: 24px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--color-ink-soft);
+  }
+
+  .site-header.is-compact {
+    padding-block: 14px;
+    border-bottom-color: var(--color-line);
+  }
+
+  .site-header.is-compact .site-header__name {
+    font-size: 17px;
+    letter-spacing: 0;
+  }
+
+  @media (max-width: 600px) {
+    .site-header {
+      padding-block: 32px 20px;
+    }
+    .site-header__name {
+      font-size: 30px;
+    }
+    .site-header.is-compact .site-header__name {
+      font-size: 16px;
+    }
+  }
+</style>
+
+<script>
+  const sentinel = document.getElementById('header-sentinel');
+  const header = document.getElementById('site-header');
+  if (sentinel && header) {
+    const io = new IntersectionObserver(
+      ([entry]) => header.classList.toggle('is-compact', !entry.isIntersecting),
+      { threshold: 0, rootMargin: '-80px 0px 0px 0px' },
+    );
+    io.observe(sentinel);
+  }
+</script>

@@ -1,0 +1,9 @@
+name = "wildlife-photography"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-05-18"
+
+# R2 binding for the production runtime (not used by current static build,
+# but here for when you want to add Astro endpoints / Workers later).
+# [[r2_buckets]]
+# binding = "PHOTOS"
+# bucket_name = "wildlife-photography-originals"

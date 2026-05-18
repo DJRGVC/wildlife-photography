@@ -1,0 +1,37 @@
+---
+import '../styles/global.css';
+import '../styles/photoswipe.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  lcpImage?: string;
+}
+
+const {
+  title = 'Wildlife Photography',
+  description = 'Wildlife photography made with a Canon EOS R7 and a 100–500mm telephoto.',
+  lcpImage,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#FAFAF7" />
+    <title>{title}</title>
+    {lcpImage ? <link rel="preload" as="image" href={lcpImage} fetchpriority="high" /> : null}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

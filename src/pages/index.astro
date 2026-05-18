@@ -1,17 +1,25 @@
 ---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Bio from '../components/Bio.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
+import SmoothScroll from '../components/SmoothScroll.astro';
+import Gallery from '../components/Gallery';
+import { loadGalleryPhotos } from '../lib/photos';
 
+const { wildlife, misc } = await loadGalleryPhotos();
+const lcpSrc = wildlife[0]?.src ?? misc[0]?.src;
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Base lcpImage={lcpSrc}>
+  <a id="top" tabindex="-1" aria-hidden="true"></a>
+  <Header />
+  <main>
+    <Bio />
+    <Gallery client:visible wildlife={wildlife} misc={misc} />
+    <Contact />
+  </main>
+  <Footer />
+  <SmoothScroll />
+</Base>
