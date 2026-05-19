@@ -22,10 +22,30 @@ interface Props {
 
 type Phase = 'closed' | 'opening' | 'open' | 'closing';
 
-const OPEN_DURATION = 680;
-const CLOSE_DURATION = 480;
+const OPEN_DURATION = 700;
+const CLOSE_DURATION = 520;
 const OPEN_EASING = 'cubic-bezier(0.22, 0.78, 0.18, 1)';
 const CLOSE_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)';
+
+type Flip = { tx: number; ty: number; scale: number };
+
+function computeFlip(
+  cardEl: HTMLElement,
+  imgEl: HTMLElement,
+  fr: { left: number; top: number; width: number; height: number },
+): Flip | null {
+  const cardRect = cardEl.getBoundingClientRect();
+  const imgRect = imgEl.getBoundingClientRect();
+  if (cardRect.width === 0 || imgRect.width === 0) return null;
+
+  const scale = fr.width / imgRect.width;
+  const imgOffsetX = imgRect.left - cardRect.left;
+  const imgOffsetY = imgRect.top - cardRect.top;
+  const tx = fr.left - imgOffsetX * scale - cardRect.left;
+  const ty = fr.top - imgOffsetY * scale - cardRect.top;
+
+  return { tx, ty, scale };
+}
 
 export default function Lightbox({ state, onClose }: Props) {
   const [active, setActive] = useState<LightboxState | null>(null);
@@ -36,6 +56,7 @@ export default function Lightbox({ state, onClose }: Props) {
   const bgRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -51,21 +72,18 @@ export default function Lightbox({ state, onClose }: Props) {
     setPhase('closing');
 
     const card = cardRef.current;
+    const img = imgRef.current;
     const cardBg = cardBgRef.current;
     const bg = bgRef.current;
     const caption = captionRef.current;
     const closeBtn = closeBtnRef.current;
 
-    const fr = active.fromRect;
     let toTransform = 'translate(0, 0) scale(1)';
-    if (card) {
-      const cardRect = card.getBoundingClientRect();
-      const dx = fr.left - cardRect.left;
-      const dy = fr.top - cardRect.top;
-      const sx = fr.width / cardRect.width;
-      const sy = fr.height / cardRect.height;
-      const s = Math.min(sx, sy);
-      toTransform = `translate(${dx}px, ${dy}px) scale(${s.toFixed(4)})`;
+    if (card && img) {
+      const flip = computeFlip(card, img, active.fromRect);
+      if (flip) {
+        toTransform = `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`;
+      }
     }
 
     const opts: KeyframeAnimationOptions = {
@@ -76,8 +94,11 @@ export default function Lightbox({ state, onClose }: Props) {
 
     bg?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
     closeBtn?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 220 });
-    caption?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 220 });
-    cardBg?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
+    caption?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 240 });
+    cardBg?.animate([{ opacity: 1 }, { opacity: 0 }], {
+      ...opts,
+      duration: CLOSE_DURATION * 0.85,
+    });
     card?.animate(
       [
         { transform: 'translate(0, 0) scale(1)' },
@@ -96,28 +117,24 @@ export default function Lightbox({ state, onClose }: Props) {
   useEffect(() => {
     if (phase !== 'opening' || !active) return;
     const card = cardRef.current;
+    const img = imgRef.current;
     const cardBg = cardBgRef.current;
     const bg = bgRef.current;
     const caption = captionRef.current;
     const closeBtn = closeBtnRef.current;
-    if (!card || !bg) return;
+    if (!card || !img || !bg) return;
 
     const raf = requestAnimationFrame(() => {
-      const cardRect = card.getBoundingClientRect();
-      if (cardRect.width === 0 || cardRect.height === 0) {
+      const flip = computeFlip(card, img, active.fromRect);
+      if (!flip) {
         setPhase('open');
         return;
       }
-      const fr = active.fromRect;
-      const dx = fr.left - cardRect.left;
-      const dy = fr.top - cardRect.top;
-      const sx = fr.width / cardRect.width;
-      const sy = fr.height / cardRect.height;
-      const s = Math.min(sx, sy);
+      const fromTransform = `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`;
 
       const cardAnim = card.animate(
         [
-          { transform: `translate(${dx}px, ${dy}px) scale(${s.toFixed(4)})` },
+          { transform: fromTransform },
           { transform: 'translate(0, 0) scale(1)' },
         ],
         { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
@@ -126,7 +143,7 @@ export default function Lightbox({ state, onClose }: Props) {
       cardBg?.animate(
         [{ opacity: 0 }, { opacity: 1 }],
         {
-          duration: OPEN_DURATION * 0.9,
+          duration: OPEN_DURATION * 0.85,
           easing: 'ease-out',
           fill: 'forwards',
         },
@@ -134,14 +151,14 @@ export default function Lightbox({ state, onClose }: Props) {
 
       bg.animate(
         [{ opacity: 0 }, { opacity: 1 }],
-        { duration: 460, easing: 'ease-out', fill: 'forwards' },
+        { duration: 480, easing: 'ease-out', fill: 'forwards' },
       );
 
       caption?.animate(
         [{ opacity: 0 }, { opacity: 1 }],
         {
-          duration: OPEN_DURATION * 0.55,
-          delay: OPEN_DURATION * 0.5,
+          duration: OPEN_DURATION * 0.5,
+          delay: OPEN_DURATION * 0.55,
           easing: 'ease-out',
           fill: 'both',
         },
@@ -149,7 +166,7 @@ export default function Lightbox({ state, onClose }: Props) {
 
       closeBtn?.animate(
         [{ opacity: 0 }, { opacity: 1 }],
-        { duration: 320, delay: 280, easing: 'ease-out', fill: 'forwards' },
+        { duration: 320, delay: 320, easing: 'ease-out', fill: 'forwards' },
       );
 
       cardAnim.finished.then(() => setPhase('open')).catch(() => {});
@@ -199,6 +216,7 @@ export default function Lightbox({ state, onClose }: Props) {
         <div className="lb__card-bg" ref={cardBgRef} aria-hidden="true" />
         <div className="lb__media">
           <img
+            ref={imgRef}
             className="lb__img"
             src={photo.src}
             srcSet={srcSet}

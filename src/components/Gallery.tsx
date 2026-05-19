@@ -15,6 +15,7 @@ export type AnimalEntry = {
 };
 
 export type GalleryPhoto = Photo & {
+  key: string;
   fileName: string;
   date: string;
   dateFormatted: string;
@@ -106,11 +107,13 @@ function PhotoAlbumBlock({
   showAnimalTitle,
   globalIndexBase,
   onPick,
+  hiddenKey,
 }: {
   photos: readonly GalleryPhoto[];
   showAnimalTitle: boolean;
   globalIndexBase: number;
   onPick: (p: GalleryPhoto, showAnimal: boolean, target: HTMLElement) => void;
+  hiddenKey: string | null;
 }) {
   return (
     <div className="gallery__inner">
@@ -126,6 +129,7 @@ function PhotoAlbumBlock({
             const p = ctx.photo as GalleryPhoto;
             const globalIdx = globalIndexBase + ctx.index;
             const eager = globalIdx < EAGER_COUNT;
+            const isHidden = hiddenKey === p.key;
             const srcSet = (p.srcSet ?? [])
               .map((v) => `${v.src} ${v.width}w`)
               .join(', ');
@@ -135,6 +139,8 @@ function PhotoAlbumBlock({
                 className="gallery__item"
                 href={p.fullSrc}
                 aria-label={alt}
+                aria-hidden={isHidden || undefined}
+                tabIndex={isHidden ? -1 : undefined}
                 style={{
                   display: 'block',
                   width: ctx.width,
@@ -142,6 +148,7 @@ function PhotoAlbumBlock({
                   backgroundImage: `url(${p.lqip})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
+                  visibility: isHidden ? 'hidden' : 'visible',
                 }}
                 onClick={(e) => {
                   e.preventDefault();
@@ -175,10 +182,12 @@ function PhotoAlbumBlock({
 
 export default function Gallery({ wildlife, misc }: Props) {
   const [lbState, setLbState] = useState<LightboxState | null>(null);
+  const [hiddenKey, setHiddenKey] = useState<string | null>(null);
 
   const pick = useCallback(
     (p: GalleryPhoto, showAnimal: boolean, sourceEl: HTMLElement) => {
       const r = sourceEl.getBoundingClientRect();
+      setHiddenKey(p.key);
       setLbState({
         photo: {
           src: p.src,
@@ -194,7 +203,10 @@ export default function Gallery({ wildlife, misc }: Props) {
     [],
   );
 
-  const close = useCallback(() => setLbState(null), []);
+  const close = useCallback(() => {
+    setLbState(null);
+    setHiddenKey(null);
+  }, []);
 
   const sectionBlocks = useMemo(() => {
     const blocks: React.ReactNode[] = [];
@@ -206,6 +218,7 @@ export default function Gallery({ wildlife, misc }: Props) {
           showAnimalTitle={true}
           globalIndexBase={0}
           onPick={pick}
+          hiddenKey={hiddenKey}
         />,
       );
     }
@@ -228,11 +241,12 @@ export default function Gallery({ wildlife, misc }: Props) {
           showAnimalTitle={false}
           globalIndexBase={wildlife.length}
           onPick={pick}
+          hiddenKey={hiddenKey}
         />,
       );
     }
     return blocks;
-  }, [wildlife, misc, pick]);
+  }, [wildlife, misc, pick, hiddenKey]);
 
   if (wildlife.length === 0 && misc.length === 0) {
     return (
@@ -307,9 +321,10 @@ const galleryStyles = `
     opacity: 0.75;
   }
   .gallery__sep-diamond--center {
-    width: 11px;
-    height: 11px;
-    opacity: 0.9;
+    width: 12px;
+    height: 12px;
+    opacity: 1;
+    background: color-mix(in oklab, var(--color-ink) 60%, var(--color-cream-bottom) 40%);
   }
   .gallery__item {
     display: block;
