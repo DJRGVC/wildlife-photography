@@ -102,6 +102,21 @@ function handleImgLoad(e: React.SyntheticEvent<HTMLImageElement>): void {
   e.currentTarget.classList.add('is-loaded');
 }
 
+/**
+ * Callback ref that handles the SSR-then-hydrate race: if an image was
+ * already loaded by the browser before React hydrated (i.e. anything in
+ * the initial viewport), its onLoad event has already fired and will not
+ * fire again — so we'd miss adding the .is-loaded class and the image
+ * would stay at opacity:0 forever, showing only the LQIP placeholder.
+ * Check `complete` (+ naturalWidth to filter broken images) and add the
+ * class synchronously on mount when that's the case.
+ */
+function handleImgRef(node: HTMLImageElement | null): void {
+  if (node && node.complete && node.naturalWidth > 0) {
+    node.classList.add('is-loaded');
+  }
+}
+
 function PhotoAlbumBlock({
   photos,
   showAnimalTitle,
@@ -160,6 +175,7 @@ function PhotoAlbumBlock({
                 <img
                   {...imgProps}
                   className="gallery__img"
+                  ref={handleImgRef}
                   src={p.src}
                   srcSet={srcSet || undefined}
                   sizes={`(max-width: 600px) 100vw, ${Math.round(ctx.width)}px`}
