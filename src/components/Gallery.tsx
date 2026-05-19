@@ -225,11 +225,11 @@ export default function Gallery({ wildlife, misc }: Props) {
     if (wildlife.length > 0 && misc.length > 0) {
       blocks.push(
         <div key="sep" className="gallery__sep" role="separator" aria-hidden="true">
-          <span className="gallery__sep-diamond gallery__sep-diamond--side" />
           <span className="gallery__sep-line" />
+          <span className="gallery__sep-diamond gallery__sep-diamond--side" />
           <span className="gallery__sep-diamond gallery__sep-diamond--center" />
-          <span className="gallery__sep-line" />
           <span className="gallery__sep-diamond gallery__sep-diamond--side" />
+          <span className="gallery__sep-line" />
         </div>,
       );
     }
