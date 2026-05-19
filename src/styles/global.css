@@ -23,16 +23,8 @@
     color-scheme: light;
   }
 
-  :root {
-    --tone-mix: 0;
-  }
-
   html {
-    background-color: color-mix(
-      in oklab,
-      var(--color-cream-top),
-      var(--color-cream-bottom) calc(var(--tone-mix) * 100%)
-    );
+    background-color: var(--color-cream-top);
     color: var(--color-ink);
     font-family: var(--font-serif);
     font-size: 18px;
@@ -40,7 +32,6 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 240ms ease;
   }
 
   body {
