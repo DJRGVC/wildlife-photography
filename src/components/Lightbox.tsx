@@ -99,7 +99,21 @@ export default function Lightbox({ state, onClose }: Props) {
       fill: 'forwards',
     };
 
-    bg?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
+    bg?.animate(
+      [
+        {
+          opacity: 1,
+          backdropFilter: 'blur(28px) saturate(115%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(115%)',
+        },
+        {
+          opacity: 0,
+          backdropFilter: 'blur(0px) saturate(100%)',
+          WebkitBackdropFilter: 'blur(0px) saturate(100%)',
+        },
+      ],
+      opts,
+    );
     closeBtn?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 220 });
     caption?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 240 });
     cardBg?.animate([{ opacity: 1 }, { opacity: 0 }], {
@@ -147,10 +161,24 @@ export default function Lightbox({ state, onClose }: Props) {
     let cancelled = false;
 
     // Fade the backdrop immediately so something happens on click even
-    // if the card is waiting for the image to load.
+    // if the card is waiting for the image to load. The blur radius
+    // interpolates 0px -> 28px alongside the opacity, so the page
+    // behind goes gradually crisp -> blurry instead of full blur
+    // snapping in with the tint.
     bg.animate(
-      [{ opacity: 0 }, { opacity: 1 }],
-      { duration: 360, easing: 'ease-out', fill: 'both' },
+      [
+        {
+          opacity: 0,
+          backdropFilter: 'blur(0px) saturate(100%)',
+          WebkitBackdropFilter: 'blur(0px) saturate(100%)',
+        },
+        {
+          opacity: 1,
+          backdropFilter: 'blur(28px) saturate(115%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(115%)',
+        },
+      ],
+      { duration: 500, easing: 'ease-out', fill: 'both' },
     );
 
     const startCardAnimations = () => {
