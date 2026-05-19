@@ -115,12 +115,19 @@ export default function Lightbox({ state, onClose }: Props) {
     }, CLOSE_DURATION);
   }, [phase, active, onClose]);
 
-  // useLayoutEffect (not useEffect) so the WAAPI animation is applied
-  // synchronously after React commits but BEFORE the browser paints. With
-  // useEffect + requestAnimationFrame, the browser gets one paint between
-  // render and the WAAPI starting — and the unstyled card briefly shows at
-  // its final centered position, producing a 1-frame flash before the FLIP
-  // transform "snaps" the image to the thumbnail position.
+  // useLayoutEffect (not useEffect) so the WAAPI animations are applied
+  // synchronously after React commits but BEFORE the browser paints — so
+  // there is no 1-frame flash of the card at its final centered position
+  // before the FLIP transform "snaps" it back to the thumbnail.
+  //
+  // For first-click on a photo, the WebP variant isn't cached yet — the
+  // <img>'s layout isn't fully computed, so getBoundingClientRect returns
+  // 0 and computeFlip() returns null. Previously we bailed entirely, which
+  // meant NO animation ran (card popped to center with no transition).
+  // Now we always fade the backdrop in immediately for visual feedback,
+  // then defer the card animations until the image is actually loaded so
+  // the FLIP can compute correctly. The card stays hidden (opacity: 0 in
+  // CSS) until its WAAPI starts.
   useLayoutEffect(() => {
     if (phase !== 'opening' || !active) return;
     const card = cardRef.current;
@@ -131,51 +138,79 @@ export default function Lightbox({ state, onClose }: Props) {
     const closeBtn = closeBtnRef.current;
     if (!card || !img || !bg) return;
 
-    const flip = computeFlip(card, img, active.fromRect);
-    if (!flip) {
-      setPhase('open');
-      return;
-    }
-    const fromTransform = `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`;
+    let cancelled = false;
 
-    const cardAnim = card.animate(
-      [
-        { transform: fromTransform },
-        { transform: 'translate(0, 0) scale(1)' },
-      ],
-      { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
-    );
-
-    cardBg?.animate(
-      [{ opacity: 0 }, { opacity: 1 }],
-      {
-        duration: OPEN_DURATION * 0.85,
-        easing: 'ease-out',
-        fill: 'both',
-      },
-    );
-
+    // Fade the backdrop immediately so something happens on click even
+    // if the card is waiting for the image to load.
     bg.animate(
       [{ opacity: 0 }, { opacity: 1 }],
-      { duration: 480, easing: 'ease-out', fill: 'both' },
+      { duration: 360, easing: 'ease-out', fill: 'both' },
     );
 
-    caption?.animate(
-      [{ opacity: 0 }, { opacity: 1 }],
-      {
-        duration: OPEN_DURATION * 0.5,
-        delay: OPEN_DURATION * 0.55,
-        easing: 'ease-out',
-        fill: 'both',
-      },
-    );
+    const startCardAnimations = () => {
+      if (cancelled) return;
+      const flip = computeFlip(card, img, active.fromRect);
+      const cardFromTransform = flip
+        ? `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`
+        : 'scale(0.88)';
 
-    closeBtn?.animate(
-      [{ opacity: 0 }, { opacity: 1 }],
-      { duration: 320, delay: 320, easing: 'ease-out', fill: 'both' },
-    );
+      const cardAnim = card.animate(
+        [
+          { transform: cardFromTransform, opacity: 1 },
+          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+        ],
+        { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
+      );
 
-    cardAnim.finished.then(() => setPhase('open')).catch(() => {});
+      cardBg?.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        {
+          duration: OPEN_DURATION * 0.85,
+          easing: 'ease-out',
+          fill: 'both',
+        },
+      );
+
+      caption?.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        {
+          duration: OPEN_DURATION * 0.5,
+          delay: OPEN_DURATION * 0.55,
+          easing: 'ease-out',
+          fill: 'both',
+        },
+      );
+
+      closeBtn?.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: 320, delay: 320, easing: 'ease-out', fill: 'both' },
+      );
+
+      cardAnim.finished.then(() => setPhase('open')).catch(() => {});
+    };
+
+    if (img.complete && img.naturalWidth > 0) {
+      // Image already cached → run animations immediately, no delay.
+      startCardAnimations();
+    } else {
+      // Wait for image to load before measuring + animating. Failsafe
+      // timer guarantees animations eventually run even if load/error
+      // events never fire.
+      const onReady = () => {
+        img.removeEventListener('load', onReady);
+        img.removeEventListener('error', onReady);
+        startCardAnimations();
+      };
+      img.addEventListener('load', onReady, { once: true });
+      img.addEventListener('error', onReady, { once: true });
+      const failsafe = window.setTimeout(onReady, 1500);
+      return () => {
+        cancelled = true;
+        img.removeEventListener('load', onReady);
+        img.removeEventListener('error', onReady);
+        window.clearTimeout(failsafe);
+      };
+    }
   }, [phase, active]);
 
   useEffect(() => {
@@ -305,7 +340,8 @@ const lightboxStyles = `
     max-width: min(1120px, calc(100vw - 64px));
     max-height: calc(100vh - 64px);
     transform-origin: 0 0;
-    will-change: transform;
+    will-change: transform, opacity;
+    opacity: 0;
   }
   .lb__card-bg {
     position: absolute;
