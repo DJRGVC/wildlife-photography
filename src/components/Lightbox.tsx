@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 export type LightboxPhoto = {
@@ -115,7 +115,13 @@ export default function Lightbox({ state, onClose }: Props) {
     }, CLOSE_DURATION);
   }, [phase, active, onClose]);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so the WAAPI animation is applied
+  // synchronously after React commits but BEFORE the browser paints. With
+  // useEffect + requestAnimationFrame, the browser gets one paint between
+  // render and the WAAPI starting — and the unstyled card briefly shows at
+  // its final centered position, producing a 1-frame flash before the FLIP
+  // transform "snaps" the image to the thumbnail position.
+  useLayoutEffect(() => {
     if (phase !== 'opening' || !active) return;
     const card = cardRef.current;
     const img = imgRef.current;
@@ -125,54 +131,51 @@ export default function Lightbox({ state, onClose }: Props) {
     const closeBtn = closeBtnRef.current;
     if (!card || !img || !bg) return;
 
-    const raf = requestAnimationFrame(() => {
-      const flip = computeFlip(card, img, active.fromRect);
-      if (!flip) {
-        setPhase('open');
-        return;
-      }
-      const fromTransform = `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`;
+    const flip = computeFlip(card, img, active.fromRect);
+    if (!flip) {
+      setPhase('open');
+      return;
+    }
+    const fromTransform = `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`;
 
-      const cardAnim = card.animate(
-        [
-          { transform: fromTransform },
-          { transform: 'translate(0, 0) scale(1)' },
-        ],
-        { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
-      );
+    const cardAnim = card.animate(
+      [
+        { transform: fromTransform },
+        { transform: 'translate(0, 0) scale(1)' },
+      ],
+      { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
+    );
 
-      cardBg?.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        {
-          duration: OPEN_DURATION * 0.85,
-          easing: 'ease-out',
-          fill: 'forwards',
-        },
-      );
+    cardBg?.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      {
+        duration: OPEN_DURATION * 0.85,
+        easing: 'ease-out',
+        fill: 'both',
+      },
+    );
 
-      bg.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        { duration: 480, easing: 'ease-out', fill: 'forwards' },
-      );
+    bg.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 480, easing: 'ease-out', fill: 'both' },
+    );
 
-      caption?.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        {
-          duration: OPEN_DURATION * 0.5,
-          delay: OPEN_DURATION * 0.55,
-          easing: 'ease-out',
-          fill: 'both',
-        },
-      );
+    caption?.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      {
+        duration: OPEN_DURATION * 0.5,
+        delay: OPEN_DURATION * 0.55,
+        easing: 'ease-out',
+        fill: 'both',
+      },
+    );
 
-      closeBtn?.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        { duration: 320, delay: 320, easing: 'ease-out', fill: 'forwards' },
-      );
+    closeBtn?.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 320, delay: 320, easing: 'ease-out', fill: 'both' },
+    );
 
-      cardAnim.finished.then(() => setPhase('open')).catch(() => {});
-    });
-    return () => cancelAnimationFrame(raf);
+    cardAnim.finished.then(() => setPhase('open')).catch(() => {});
   }, [phase, active]);
 
   useEffect(() => {

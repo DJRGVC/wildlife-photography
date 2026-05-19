@@ -65,7 +65,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Whitewater rushing past mossy granite boulder.",
+    "scene": "Whitewater rushing past mossy granite boulders.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape — fast-moving creek along the trail. No animal subject."
@@ -186,7 +186,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Small chipmunk foraging in alpine wildflowers among lichen-stained rock.",
+    "scene": "Small chipmunk foraging in alpine wildflowers among lichen-stained rocks.",
     "animals": [
       {
         "common_name": "Yellow-pine Chipmunk",
@@ -295,7 +295,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Single sculls rowers passing the final buoy lines at Vaires-sur-Marne.",
+    "scene": "Single scullers passing the final buoy lines at Vaires-sur-Marne.",
     "animals": [],
     "confidence": "high",
     "notes": "Paris 2024 Olympics — rowing, single sculls heat. No wildlife subject."
@@ -333,7 +333,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Two French gendarmes in service uniform at a Paris 2024 venue.",
+    "scene": "Two French gendarmes in service uniforms at a Paris 2024 venue.",
     "animals": [],
     "confidence": "high",
     "notes": "Documentary moment — venue security. No wildlife subject."
@@ -371,7 +371,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Félix Lebrun mid-swing during bronze medal match.",
+    "scene": "Félix Lebrun mid-swing during the bronze medal match.",
     "animals": [],
     "confidence": "high",
     "notes": "Paris 2024 Olympics — table tennis, French player (likely Félix Lebrun based on the blond hair and FRA kit)."
@@ -596,7 +596,7 @@
       "lat": 48.6175,
       "lng": -113.7609
     },
-    "scene": "Steller's Jay on moss-covered ground in conifer forest.",
+    "scene": "Steller's Jay on moss-covered ground in a conifer forest.",
     "animals": [
       {
         "common_name": "Steller's Jay",
@@ -674,7 +674,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Tufted Puffin in choppy sea.",
+    "scene": "Tufted Puffin in a choppy sea.",
     "animals": [
       {
         "common_name": "Tufted Puffin",
@@ -778,7 +778,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Pale, almost cream-colored brown bear lowering its head into sedge meadow.",
+    "scene": "Pale, almost cream-colored brown bear lowering its head into a sedge meadow.",
     "animals": [
       {
         "common_name": "Brown Bear (Coastal Grizzly)",
@@ -804,7 +804,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Brown bear seated in tall grass, mid yawn.",
+    "scene": "Brown bear seated in tall grass, mid-yawn.",
     "animals": [
       {
         "common_name": "Brown Bear (Coastal Grizzly)",
@@ -940,7 +940,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "Brown Pelican gliding low against pale winter sky.",
+    "scene": "Brown Pelican gliding low against a pale winter sky.",
     "animals": [
       {
         "common_name": "Brown Pelican",
