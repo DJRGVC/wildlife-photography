@@ -32,6 +32,10 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Reserve scrollbar space permanently so opening the lightbox
+       (which sets body { overflow: hidden }) doesn't shift the layout
+       wider for one frame and flash cream as the page reflows. */
+    scrollbar-gutter: stable;
   }
 
   body {
