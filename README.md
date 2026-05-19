@@ -1,6 +1,6 @@
 # Wildlife Photography
 
-> A personal photography site — built fast, served static, kept simple.
+> A fast, static, minimalistic photography portfolio.
 
 **Live at [danielgrant.photos](https://danielgrant.photos)**
 
