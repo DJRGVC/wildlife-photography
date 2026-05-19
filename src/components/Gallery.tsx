@@ -212,6 +212,7 @@ export default function Gallery({ wildlife, misc }: Props) {
           height: p.fullHeight,
           alt: altText(p),
           captionHtml: renderCaption(p, showAnimal),
+          lqip: p.lqip,
         },
         fromRect: { left: r.left, top: r.top, width: r.width, height: r.height },
       });

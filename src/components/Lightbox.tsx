@@ -8,6 +8,7 @@ export type LightboxPhoto = {
   height: number;
   alt: string;
   captionHtml: string;
+  lqip?: string;
 };
 
 export type LightboxState = {
@@ -226,6 +227,15 @@ export default function Lightbox({ state, onClose }: Props) {
             alt={photo.alt}
             draggable={false}
             fetchPriority="high"
+            style={
+              photo.lqip
+                ? {
+                    backgroundImage: `url(${photo.lqip})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }
+                : undefined
+            }
           />
         </div>
         <div
