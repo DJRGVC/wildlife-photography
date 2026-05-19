@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   RowsPhotoAlbum,
   type Photo,
   type RenderImageContext,
 } from 'react-photo-album';
 import 'react-photo-album/rows.css';
+import Lightbox, { type LightboxPhoto } from './Lightbox';
 
 export type AnimalEntry = {
   common_name: string;
@@ -33,6 +34,8 @@ interface Props {
   wildlife: readonly GalleryPhoto[];
   misc: readonly GalleryPhoto[];
 }
+
+const EAGER_COUNT = 6;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -94,17 +97,23 @@ function resetTilt(e: React.MouseEvent<HTMLAnchorElement>): void {
   el.style.setProperty('--tilt-y', '0deg');
 }
 
+function handleImgLoad(e: React.SyntheticEvent<HTMLImageElement>): void {
+  e.currentTarget.classList.add('is-loaded');
+}
+
 function PhotoAlbumBlock({
   photos,
   showAnimalTitle,
-  containerId,
+  globalIndexBase,
+  onPick,
 }: {
   photos: readonly GalleryPhoto[];
   showAnimalTitle: boolean;
-  containerId: string;
+  globalIndexBase: number;
+  onPick: (p: GalleryPhoto, showAnimal: boolean) => void;
 }) {
   return (
-    <div className="gallery__inner" id={containerId}>
+    <div className="gallery__inner">
       <RowsPhotoAlbum
         photos={photos as unknown as Photo[]}
         targetRowHeight={340}
@@ -115,6 +124,8 @@ function PhotoAlbumBlock({
         render={{
           image: (imgProps, ctx: RenderImageContext<Photo>) => {
             const p = ctx.photo as GalleryPhoto;
+            const globalIdx = globalIndexBase + ctx.index;
+            const eager = globalIdx < EAGER_COUNT;
             const srcSet = (p.srcSet ?? [])
               .map((v) => `${v.src} ${v.width}w`)
               .join(', ');
@@ -123,35 +134,35 @@ function PhotoAlbumBlock({
               <a
                 className="gallery__item"
                 href={p.fullSrc}
-                data-pswp-width={p.fullWidth}
-                data-pswp-height={p.fullHeight}
-                data-caption-html={renderCaption(p, showAnimalTitle)}
                 aria-label={alt}
-                target="_blank"
-                rel="noreferrer"
+                style={{
+                  display: 'block',
+                  width: ctx.width,
+                  height: ctx.height,
+                  backgroundImage: `url(${p.lqip})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onPick(p, showAnimalTitle);
+                }}
                 onMouseMove={handleTilt}
                 onMouseLeave={resetTilt}
-                style={{ display: 'block', width: ctx.width, height: ctx.height }}
               >
                 <img
                   {...imgProps}
+                  className="gallery__img"
                   src={p.src}
                   srcSet={srcSet || undefined}
                   sizes={`(max-width: 600px) 100vw, ${Math.round(ctx.width)}px`}
                   alt={alt}
                   width={ctx.width}
                   height={ctx.height}
-                  loading="lazy"
+                  loading={eager ? 'eager' : 'lazy'}
                   decoding="async"
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    backgroundImage: `url(${p.lqip})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
+                  fetchPriority={eager ? 'high' : 'auto'}
+                  onLoad={handleImgLoad}
                 />
               </a>
             );
@@ -163,61 +174,64 @@ function PhotoAlbumBlock({
 }
 
 export default function Gallery({ wildlife, misc }: Props) {
-  const galleryRef = useRef<HTMLDivElement>(null);
+  const [lbPhoto, setLbPhoto] = useState<LightboxPhoto | null>(null);
 
-  useEffect(() => {
-    const root = galleryRef.current;
-    if (!root) return;
-    if (wildlife.length === 0 && misc.length === 0) return;
-
-    let lightbox: { destroy(): void } | null = null;
-    let cancelled = false;
-
-    (async () => {
-      const [
-        { default: PhotoSwipeLightbox },
-        { default: CaptionPlugin },
-      ] = await Promise.all([
-        import('photoswipe/lightbox'),
-        import('photoswipe-dynamic-caption-plugin'),
-        import('photoswipe/style.css'),
-        import('photoswipe-dynamic-caption-plugin/photoswipe-dynamic-caption-plugin.css'),
-      ]);
-
-      if (cancelled) return;
-
-      const lb = new PhotoSwipeLightbox({
-        gallery: root,
-        children: 'a.gallery__item',
-        pswpModule: () => import('photoswipe'),
-        bgOpacity: 1,
-        showHideAnimationType: 'zoom',
-        showAnimationDuration: 420,
-        hideAnimationDuration: 380,
+  const pick = useCallback(
+    (p: GalleryPhoto, showAnimal: boolean) => {
+      setLbPhoto({
+        src: p.fullSrc,
+        width: p.fullWidth,
+        height: p.fullHeight,
+        alt: altText(p),
+        captionHtml: renderCaption(p, showAnimal),
       });
+    },
+    [],
+  );
 
-      new CaptionPlugin(lb, {
-        type: 'below',
-        captionContent: (slide: { data: { element?: HTMLElement } }) => {
-          return slide.data.element?.dataset.captionHtml ?? '';
-        },
-      });
+  const close = useCallback(() => setLbPhoto(null), []);
 
-      lb.init();
-      lightbox = lb as unknown as { destroy(): void };
-    })();
-
-    return () => {
-      cancelled = true;
-      lightbox?.destroy();
-    };
-  }, [wildlife.length, misc.length]);
+  const sectionBlocks = useMemo(() => {
+    const blocks: React.ReactNode[] = [];
+    if (wildlife.length > 0) {
+      blocks.push(
+        <PhotoAlbumBlock
+          key="wildlife"
+          photos={wildlife}
+          showAnimalTitle={true}
+          globalIndexBase={0}
+          onPick={pick}
+        />,
+      );
+    }
+    if (wildlife.length > 0 && misc.length > 0) {
+      blocks.push(
+        <div key="sep" className="gallery__sep" role="separator" aria-hidden="true">
+          <span className="gallery__sep-line" />
+          <span className="gallery__sep-dot">·</span>
+          <span className="gallery__sep-line" />
+        </div>,
+      );
+    }
+    if (misc.length > 0) {
+      blocks.push(
+        <PhotoAlbumBlock
+          key="misc"
+          photos={misc}
+          showAnimalTitle={false}
+          globalIndexBase={wildlife.length}
+          onPick={pick}
+        />,
+      );
+    }
+    return blocks;
+  }, [wildlife, misc, pick]);
 
   if (wildlife.length === 0 && misc.length === 0) {
     return (
       <section className="gallery gallery--empty" aria-label="Photography gallery">
         <p className="gallery__empty">
-          No photos yet. Drop tagged JPEGs into <code>src/photography/wildlife/</code> or{' '}
+          No photos yet. Drop JPEGs into <code>src/photography/wildlife/</code> or{' '}
           <code>src/photography/misc/</code> and they will appear here.
         </p>
         <style>{galleryStyles}</style>
@@ -226,34 +240,19 @@ export default function Gallery({ wildlife, misc }: Props) {
   }
 
   return (
-    <section className="gallery" aria-label="Photography gallery" ref={galleryRef}>
-      {wildlife.length > 0 && (
-        <PhotoAlbumBlock
-          photos={wildlife}
-          showAnimalTitle={true}
-          containerId="gallery-wildlife"
-        />
-      )}
-      {wildlife.length > 0 && misc.length > 0 && (
-        <div className="gallery__sep" role="separator" aria-hidden="true">
-          <span>·</span>
-        </div>
-      )}
-      {misc.length > 0 && (
-        <PhotoAlbumBlock
-          photos={misc}
-          showAnimalTitle={false}
-          containerId="gallery-misc"
-        />
-      )}
-      <style>{galleryStyles}</style>
-    </section>
+    <>
+      <section className="gallery" aria-label="Photography gallery">
+        {sectionBlocks}
+        <style>{galleryStyles}</style>
+      </section>
+      <Lightbox photo={lbPhoto} onClose={close} />
+    </>
   );
 }
 
 const galleryStyles = `
   .gallery {
-    padding-block: 8px 120px;
+    padding-block: 16px 96px;
     padding-inline: max(24px, calc((100% - 1200px) / 2 + 24px));
   }
   .gallery--empty {
@@ -275,18 +274,23 @@ const galleryStyles = `
   .gallery__inner { margin: 0; }
   .gallery__sep {
     display: flex;
-    justify-content: center;
     align-items: center;
-    margin-block: 96px;
-    color: var(--color-ink-faint);
-    font-family: var(--font-serif);
-    font-size: 24px;
-    line-height: 1;
+    justify-content: center;
+    gap: 18px;
+    margin-block: 80px;
     user-select: none;
   }
-  .gallery__sep span {
-    display: inline-block;
-    transform: translateY(-2px);
+  .gallery__sep-line {
+    width: 56px;
+    height: 1px;
+    background: color-mix(in oklab, var(--color-ink) 22%, transparent);
+  }
+  .gallery__sep-dot {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    color: color-mix(in oklab, var(--color-ink) 32%, transparent);
+    line-height: 1;
+    transform: translateY(-3px);
   }
   .gallery__item {
     display: block;
@@ -300,29 +304,40 @@ const galleryStyles = `
     will-change: transform;
     background-color: var(--color-cream-deep);
   }
-  .gallery__item img {
-    transition: transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  .gallery__img {
+    opacity: 0;
+    transition: opacity 360ms ease, transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
+  .gallery__img.is-loaded { opacity: 1; }
   @media (hover: hover) {
     .gallery__item:hover {
       box-shadow: 0 18px 38px -22px rgba(20, 20, 18, 0.35);
     }
-    .gallery__item:hover img {
+    .gallery__item:hover .gallery__img {
       transform: scale(1.012);
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .gallery__item,
-    .gallery__item img {
+    .gallery__img {
       transform: none !important;
-      transition: none !important;
+      transition: opacity 80ms linear !important;
     }
   }
   @media (max-width: 600px) {
-    .gallery__sep {
-      margin-block: 64px;
-      font-size: 20px;
+    .gallery {
+      padding-block: 8px 64px;
     }
+    .gallery__sep {
+      margin-block: 56px;
+      gap: 14px;
+    }
+    .gallery__sep-line { width: 36px; }
+    .gallery__sep-dot { font-size: 18px; }
     .gallery__item {
       border-radius: 4px;
     }

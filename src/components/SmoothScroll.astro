@@ -38,12 +38,39 @@
   }
 
   let instance = start();
+  (window as unknown as { __lenis?: Lenis }).__lenis = instance ?? undefined;
+
   reduced.addEventListener('change', () => {
     if (reduced.matches && instance) {
       instance.destroy();
       instance = null;
+      (window as unknown as { __lenis?: Lenis }).__lenis = undefined;
     } else if (!reduced.matches && !instance) {
       instance = start();
+      (window as unknown as { __lenis?: Lenis }).__lenis = instance ?? undefined;
     }
   });
+
+  // Scroll-driven page tone — bg color smoothly shifts from cream to warm tan
+  // as the wildlife/misc separator approaches the viewport.
+  let rafId: number | null = null;
+  const root = document.documentElement;
+
+  function updateTone() {
+    rafId = null;
+    const sep = document.querySelector('.gallery__sep') as HTMLElement | null;
+    if (!sep) return;
+    const rect = sep.getBoundingClientRect();
+    const vh = window.innerHeight || 1;
+    const center = rect.top + rect.height / 2;
+    const t = 1 - Math.max(0, Math.min(1, center / vh));
+    root.style.setProperty('--tone-mix', t.toFixed(3));
+  }
+
+  const onScroll = () => {
+    if (rafId == null) rafId = requestAnimationFrame(updateTone);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  setTimeout(updateTone, 0);
 </script>

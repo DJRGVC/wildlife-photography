@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
-import Bio from '../components/Bio.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
 import SmoothScroll from '../components/SmoothScroll.astro';
@@ -16,7 +15,6 @@ const lcpSrc = wildlife[0]?.src ?? misc[0]?.src;
   <a id="top" tabindex="-1" aria-hidden="true"></a>
   <Header />
   <main>
-    <Bio />
     <Gallery client:visible wildlife={wildlife} misc={misc} />
     <Contact />
   </main>

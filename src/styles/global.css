@@ -2,7 +2,10 @@
 
 @theme {
   --color-cream: #FAFAF7;
+  --color-cream-top: #FAFAF7;
   --color-cream-deep: #F8F6F1;
+  --color-cream-bottom: #F0E6CF;
+  --color-card: #ECDFC0;
   --color-ink: #1A1A1A;
   --color-ink-soft: #4A4A4A;
   --color-ink-faint: #8A8A85;
@@ -20,8 +23,16 @@
     color-scheme: light;
   }
 
+  :root {
+    --tone-mix: 0;
+  }
+
   html {
-    background-color: var(--color-cream);
+    background-color: color-mix(
+      in oklab,
+      var(--color-cream-top),
+      var(--color-cream-bottom) calc(var(--tone-mix) * 100%)
+    );
     color: var(--color-ink);
     font-family: var(--font-serif);
     font-size: 18px;
@@ -29,6 +40,7 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 240ms ease;
   }
 
   body {

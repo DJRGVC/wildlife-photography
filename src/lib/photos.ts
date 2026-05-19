@@ -49,9 +49,9 @@ const MISC_MODULES = import.meta.glob<{ default: ImageMetadata }>(
   { eager: true },
 );
 
-const VARIANT_WIDTHS = [640, 960, 1280, 1920] as const;
-const FULL_MAX_WIDTH = 2560;
-const FORMAT = 'avif' as const;
+const VARIANT_WIDTHS = [720, 1440] as const;
+const FULL_MAX_WIDTH = 2200;
+const FORMAT = 'webp' as const;
 
 function readMeta(key: string): PhotoMeta | null {
   const map = imageData as unknown as Record<string, PhotoMeta>;
