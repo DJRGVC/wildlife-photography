@@ -212,11 +212,11 @@ export default function Gallery({ wildlife, misc }: Props) {
     if (wildlife.length > 0 && misc.length > 0) {
       blocks.push(
         <div key="sep" className="gallery__sep" role="separator" aria-hidden="true">
+          <span className="gallery__sep-diamond gallery__sep-diamond--side" />
           <span className="gallery__sep-line" />
-          <span className="gallery__sep-diamond gallery__sep-diamond--solid" />
-          <span className="gallery__sep-diamond gallery__sep-diamond--hollow" />
-          <span className="gallery__sep-diamond gallery__sep-diamond--solid" />
+          <span className="gallery__sep-diamond gallery__sep-diamond--center" />
           <span className="gallery__sep-line" />
+          <span className="gallery__sep-diamond gallery__sep-diamond--side" />
         </div>,
       );
     }
@@ -283,35 +283,33 @@ const galleryStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     margin-block: 96px;
-    color: var(--color-ink);
+    color: color-mix(in oklab, var(--color-ink) 38%, var(--color-cream-bottom) 62%);
     user-select: none;
   }
   .gallery__sep-line {
     flex: 0 0 auto;
-    width: 96px;
+    width: 100px;
     height: 1px;
     background: currentColor;
-    opacity: 0.32;
+    opacity: 0.6;
   }
   .gallery__sep-diamond {
     display: inline-block;
     transform: rotate(45deg);
+    background: currentColor;
     flex: 0 0 auto;
   }
-  .gallery__sep-diamond--solid {
+  .gallery__sep-diamond--side {
     width: 6px;
     height: 6px;
-    background: currentColor;
-    opacity: 0.5;
+    opacity: 0.75;
   }
-  .gallery__sep-diamond--hollow {
+  .gallery__sep-diamond--center {
     width: 11px;
     height: 11px;
-    border: 1.2px solid currentColor;
-    opacity: 0.55;
-    margin-inline: 4px;
+    opacity: 0.9;
   }
   .gallery__item {
     display: block;
@@ -357,9 +355,9 @@ const galleryStyles = `
       margin-block: 56px;
       gap: 14px;
     }
-    .gallery__sep-line { width: 56px; }
-    .gallery__sep-diamond--hollow { width: 9px; height: 9px; }
-    .gallery__sep-diamond--solid { width: 5px; height: 5px; }
+    .gallery__sep-line { width: 60px; }
+    .gallery__sep-diamond--center { width: 9px; height: 9px; }
+    .gallery__sep-diamond--side { width: 5px; height: 5px; }
     .gallery__item {
       border-radius: 4px;
     }

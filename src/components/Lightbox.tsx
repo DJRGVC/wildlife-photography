@@ -22,8 +22,8 @@ interface Props {
 
 type Phase = 'closed' | 'opening' | 'open' | 'closing';
 
-const OPEN_DURATION = 520;
-const CLOSE_DURATION = 360;
+const OPEN_DURATION = 680;
+const CLOSE_DURATION = 480;
 const OPEN_EASING = 'cubic-bezier(0.22, 0.78, 0.18, 1)';
 const CLOSE_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)';
 
@@ -32,10 +32,10 @@ export default function Lightbox({ state, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>('closed');
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const cardBgRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const imgWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -47,14 +47,26 @@ export default function Lightbox({ state, onClose }: Props) {
   }, [state, active]);
 
   const close = useCallback(() => {
-    if (phase === 'closing' || phase === 'closed') return;
+    if (phase === 'closing' || phase === 'closed' || !active) return;
     setPhase('closing');
 
     const card = cardRef.current;
+    const cardBg = cardBgRef.current;
     const bg = bgRef.current;
     const caption = captionRef.current;
-    const imgWrap = imgWrapRef.current;
     const closeBtn = closeBtnRef.current;
+
+    const fr = active.fromRect;
+    let toTransform = 'translate(0, 0) scale(1)';
+    if (card) {
+      const cardRect = card.getBoundingClientRect();
+      const dx = fr.left - cardRect.left;
+      const dy = fr.top - cardRect.top;
+      const sx = fr.width / cardRect.width;
+      const sy = fr.height / cardRect.height;
+      const s = Math.min(sx, sy);
+      toTransform = `translate(${dx}px, ${dy}px) scale(${s.toFixed(4)})`;
+    }
 
     const opts: KeyframeAnimationOptions = {
       duration: CLOSE_DURATION,
@@ -63,19 +75,13 @@ export default function Lightbox({ state, onClose }: Props) {
     };
 
     bg?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
-    closeBtn?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 200 });
-    caption?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 200 });
+    closeBtn?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 220 });
+    caption?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 220 });
+    cardBg?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
     card?.animate(
       [
-        { opacity: 1, transform: 'scale(1)' },
-        { opacity: 0, transform: 'scale(0.94)' },
-      ],
-      opts,
-    );
-    imgWrap?.animate(
-      [
-        { opacity: 1, transform: 'scale(1)' },
-        { opacity: 0, transform: 'scale(0.94)' },
+        { transform: 'translate(0, 0) scale(1)' },
+        { transform: toTransform },
       ],
       opts,
     );
@@ -85,69 +91,68 @@ export default function Lightbox({ state, onClose }: Props) {
       setActive(null);
       onClose();
     }, CLOSE_DURATION);
-  }, [phase, onClose]);
+  }, [phase, active, onClose]);
 
   useEffect(() => {
     if (phase !== 'opening' || !active) return;
     const card = cardRef.current;
+    const cardBg = cardBgRef.current;
     const bg = bgRef.current;
     const caption = captionRef.current;
-    const imgWrap = imgWrapRef.current;
     const closeBtn = closeBtnRef.current;
-    if (!card || !bg || !imgWrap) return;
+    if (!card || !bg) return;
 
     const raf = requestAnimationFrame(() => {
-      const wrapRect = imgWrap.getBoundingClientRect();
-      const fr = active.fromRect;
-      if (wrapRect.width === 0 || wrapRect.height === 0) {
+      const cardRect = card.getBoundingClientRect();
+      if (cardRect.width === 0 || cardRect.height === 0) {
         setPhase('open');
         return;
       }
-      const wrapCx = wrapRect.left + wrapRect.width / 2;
-      const wrapCy = wrapRect.top + wrapRect.height / 2;
-      const frCx = fr.left + fr.width / 2;
-      const frCy = fr.top + fr.height / 2;
-      const dx = frCx - wrapCx;
-      const dy = frCy - wrapCy;
-      const sx = fr.width / wrapRect.width;
-      const sy = fr.height / wrapRect.height;
+      const fr = active.fromRect;
+      const dx = fr.left - cardRect.left;
+      const dy = fr.top - cardRect.top;
+      const sx = fr.width / cardRect.width;
+      const sy = fr.height / cardRect.height;
       const s = Math.min(sx, sy);
 
-      const imgAnim = imgWrap.animate(
+      const cardAnim = card.animate(
         [
-          { transform: `translate(${dx}px, ${dy}px) scale(${s.toFixed(4)})`, opacity: 1 },
-          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+          { transform: `translate(${dx}px, ${dy}px) scale(${s.toFixed(4)})` },
+          { transform: 'translate(0, 0) scale(1)' },
         ],
         { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
       );
 
-      bg.animate(
+      cardBg?.animate(
         [{ opacity: 0 }, { opacity: 1 }],
-        { duration: 360, easing: 'ease-out', fill: 'forwards' },
+        {
+          duration: OPEN_DURATION * 0.9,
+          easing: 'ease-out',
+          fill: 'forwards',
+        },
       );
 
-      card.animate(
-        [
-          { opacity: 0, transform: 'scale(0.94)' },
-          { opacity: 1, transform: 'scale(1)' },
-        ],
-        { duration: 380, easing: OPEN_EASING, fill: 'forwards', delay: 60 },
+      bg.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: 460, easing: 'ease-out', fill: 'forwards' },
       );
 
       caption?.animate(
-        [
-          { opacity: 0, transform: 'translateY(8px)' },
-          { opacity: 1, transform: 'translateY(0)' },
-        ],
-        { duration: 320, delay: 240, easing: 'ease-out', fill: 'both' },
+        [{ opacity: 0 }, { opacity: 1 }],
+        {
+          duration: OPEN_DURATION * 0.55,
+          delay: OPEN_DURATION * 0.5,
+          easing: 'ease-out',
+          fill: 'both',
+        },
       );
 
       closeBtn?.animate(
         [{ opacity: 0 }, { opacity: 1 }],
-        { duration: 280, delay: 200, easing: 'ease-out', fill: 'forwards' },
+        { duration: 320, delay: 280, easing: 'ease-out', fill: 'forwards' },
       );
 
-      imgAnim.finished.then(() => setPhase('open')).catch(() => {});
+      cardAnim.finished.then(() => setPhase('open')).catch(() => {});
     });
     return () => cancelAnimationFrame(raf);
   }, [phase, active]);
@@ -191,7 +196,8 @@ export default function Lightbox({ state, onClose }: Props) {
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="lb__media" ref={imgWrapRef}>
+        <div className="lb__card-bg" ref={cardBgRef} aria-hidden="true" />
+        <div className="lb__media">
           <img
             className="lb__img"
             src={photo.src}
@@ -259,7 +265,6 @@ const lightboxStyles = `
 
   .lb__card {
     position: relative;
-    background: var(--color-card);
     border-radius: 12px;
     padding: 18px;
     display: flex;
@@ -268,19 +273,26 @@ const lightboxStyles = `
     width: max-content;
     max-width: min(1120px, calc(100vw - 64px));
     max-height: calc(100vh - 64px);
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+  .lb__card-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--color-card);
+    border-radius: 12px;
     box-shadow: 0 28px 80px -30px rgba(28, 22, 12, 0.22);
+    z-index: 0;
     opacity: 0;
-    transform: scale(0.94);
-    will-change: opacity, transform;
+    will-change: opacity;
   }
 
   .lb__media {
     position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    transform-origin: center;
-    will-change: transform, opacity;
   }
   .lb__img {
     display: block;
@@ -294,7 +306,8 @@ const lightboxStyles = `
   }
 
   .lb__caption {
-    flex: 0 0 auto;
+    position: relative;
+    z-index: 1;
     margin-top: 18px;
     padding: 0 8px 4px;
     text-align: center;
@@ -365,6 +378,7 @@ const lightboxStyles = `
     -webkit-backdrop-filter: blur(8px);
     opacity: 0;
     transition: background-color 200ms ease;
+    z-index: 2;
   }
   .lb__close:hover {
     background: color-mix(in oklab, var(--color-cream-top) 95%, transparent);
@@ -378,6 +392,7 @@ const lightboxStyles = `
       max-height: calc(100vh - 32px);
       border-radius: 10px;
     }
+    .lb__card-bg { border-radius: 10px; }
     .lb__img {
       max-width: calc(100vw - 60px);
       max-height: calc(100vh - 240px);
@@ -392,7 +407,7 @@ const lightboxStyles = `
   @media (prefers-reduced-motion: reduce) {
     .lb__bg,
     .lb__card,
-    .lb__media,
+    .lb__card-bg,
     .lb__caption,
     .lb__close {
       transition: none !important;

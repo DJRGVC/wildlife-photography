@@ -65,9 +65,33 @@ const name = 'Daniel Grant';
   .site-header__nav {
     display: flex;
     gap: 24px;
-    font-family: var(--font-sans);
-    font-size: 18px;
-    color: var(--color-ink-soft);
+  }
+
+  .site-header__nav a {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--color-ink);
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 calc(100% + 2px);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    transition:
+      background-size 360ms cubic-bezier(0.22, 0.78, 0.18, 1),
+      color 200ms ease,
+      transform 200ms ease;
+  }
+
+  .site-header__nav a:hover {
+    background-size: 100% 1px;
+    color: color-mix(in oklab, var(--color-ink) 100%, transparent);
+  }
+
+  .site-header__nav a:focus-visible {
+    background-size: 100% 1px;
+    outline: 0;
   }
 
   @media (max-width: 600px) {
@@ -76,6 +100,9 @@ const name = 'Daniel Grant';
     }
     .site-header__name {
       font-size: 22px;
+    }
+    .site-header__nav a {
+      font-size: 18px;
     }
   }
 </style>
