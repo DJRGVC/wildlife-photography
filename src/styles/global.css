@@ -11,8 +11,8 @@
   --color-ink-faint: #8A8A85;
   --color-line: #E5E1D8;
 
-  --font-serif: Charter, Cardo, "Source Serif Pro", "Charis SIL", Georgia, ui-serif, serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Bodoni 72 Book", "Bodoni 72 Oldstyle", "Bodoni 72", "Bodoni", Didot, "Hoefler Text", Georgia, ui-serif, serif;
+  --font-sans: "Bodoni 72 Book", "Bodoni 72 Oldstyle", "Bodoni 72", "Bodoni", Didot, "Hoefler Text", Georgia, ui-serif, serif;
 
   --container-text: 720px;
   --container-gallery: 1200px;

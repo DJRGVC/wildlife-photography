@@ -5,7 +5,7 @@ import {
   type RenderImageContext,
 } from 'react-photo-album';
 import 'react-photo-album/rows.css';
-import Lightbox, { type LightboxPhoto } from './Lightbox';
+import Lightbox, { type LightboxState } from './Lightbox';
 
 export type AnimalEntry = {
   common_name: string;
@@ -110,7 +110,7 @@ function PhotoAlbumBlock({
   photos: readonly GalleryPhoto[];
   showAnimalTitle: boolean;
   globalIndexBase: number;
-  onPick: (p: GalleryPhoto, showAnimal: boolean) => void;
+  onPick: (p: GalleryPhoto, showAnimal: boolean, target: HTMLElement) => void;
 }) {
   return (
     <div className="gallery__inner">
@@ -145,7 +145,7 @@ function PhotoAlbumBlock({
                 }}
                 onClick={(e) => {
                   e.preventDefault();
-                  onPick(p, showAnimalTitle);
+                  onPick(p, showAnimalTitle, e.currentTarget);
                 }}
                 onMouseMove={handleTilt}
                 onMouseLeave={resetTilt}
@@ -174,22 +174,27 @@ function PhotoAlbumBlock({
 }
 
 export default function Gallery({ wildlife, misc }: Props) {
-  const [lbPhoto, setLbPhoto] = useState<LightboxPhoto | null>(null);
+  const [lbState, setLbState] = useState<LightboxState | null>(null);
 
   const pick = useCallback(
-    (p: GalleryPhoto, showAnimal: boolean) => {
-      setLbPhoto({
-        src: p.fullSrc,
-        width: p.fullWidth,
-        height: p.fullHeight,
-        alt: altText(p),
-        captionHtml: renderCaption(p, showAnimal),
+    (p: GalleryPhoto, showAnimal: boolean, sourceEl: HTMLElement) => {
+      const r = sourceEl.getBoundingClientRect();
+      setLbState({
+        photo: {
+          src: p.src,
+          srcSet: p.srcSet,
+          width: p.fullWidth,
+          height: p.fullHeight,
+          alt: altText(p),
+          captionHtml: renderCaption(p, showAnimal),
+        },
+        fromRect: { left: r.left, top: r.top, width: r.width, height: r.height },
       });
     },
     [],
   );
 
-  const close = useCallback(() => setLbPhoto(null), []);
+  const close = useCallback(() => setLbState(null), []);
 
   const sectionBlocks = useMemo(() => {
     const blocks: React.ReactNode[] = [];
@@ -245,7 +250,7 @@ export default function Gallery({ wildlife, misc }: Props) {
         {sectionBlocks}
         <style>{galleryStyles}</style>
       </section>
-      <Lightbox photo={lbPhoto} onClose={close} />
+      <Lightbox state={lbState} onClose={close} />
     </>
   );
 }

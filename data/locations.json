@@ -21,35 +21,35 @@
     "location_raw": "The Enchantments Hike (In Washinton, North Cascades I believe)"
   },
   "2024-08-01": {
-    "geocode_display": "Paris, \u00cele-de-France, France",
+    "geocode_display": "Paris, Île-de-France, France",
     "lat": 48.8589,
     "lng": 2.32,
     "location": "Paris, France (2024 Olympics)",
     "location_raw": "Paris Olympics (2024)"
   },
   "2024-08-02": {
-    "geocode_display": "Paris, \u00cele-de-France, France",
+    "geocode_display": "Paris, Île-de-France, France",
     "lat": 48.8589,
     "lng": 2.32,
     "location": "Paris, France (2024 Olympics)",
     "location_raw": "Paris Olympics (2024)"
   },
   "2024-08-03": {
-    "geocode_display": "Paris, \u00cele-de-France, France",
+    "geocode_display": "Paris, Île-de-France, France",
     "lat": 48.8589,
     "lng": 2.32,
     "location": "Paris, France (2024 Olympics)",
     "location_raw": "Paris Olympics (2024)"
   },
   "2024-08-05": {
-    "geocode_display": "Paris, \u00cele-de-France, France",
+    "geocode_display": "Paris, Île-de-France, France",
     "lat": 48.8589,
     "lng": 2.32,
     "location": "Paris, France (2024 Olympics)",
     "location_raw": "Paris Olympics (2024)"
   },
   "2024-08-06": {
-    "geocode_display": "Paris, \u00cele-de-France, France",
+    "geocode_display": "Paris, Île-de-France, France",
     "lat": 48.8589,
     "lng": 2.32,
     "location": "Paris, France (2024 Olympics)",
@@ -138,5 +138,12 @@
     "lng": -122.9176,
     "location": "Point Reyes National Seashore, California, USA",
     "location_raw": "Point Reyes (California)"
+  },
+  "2024-08-07": {
+    "geocode_display": "Paris, Île-de-France, France",
+    "lat": 48.8589,
+    "lng": 2.32,
+    "location": "Paris, France (2024 Olympics)",
+    "location_raw": "Paris Olympics (2024)"
   }
 }

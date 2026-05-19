@@ -3,47 +3,157 @@ import { createPortal } from 'react-dom';
 
 export type LightboxPhoto = {
   src: string;
+  srcSet?: readonly { src: string; width: number }[];
   width: number;
   height: number;
   alt: string;
   captionHtml: string;
 };
 
+export type LightboxState = {
+  photo: LightboxPhoto;
+  fromRect: { left: number; top: number; width: number; height: number };
+};
+
 interface Props {
-  photo: LightboxPhoto | null;
+  state: LightboxState | null;
   onClose: () => void;
 }
 
 type Phase = 'closed' | 'opening' | 'open' | 'closing';
 
-export default function Lightbox({ photo, onClose }: Props) {
+const OPEN_DURATION = 520;
+const CLOSE_DURATION = 360;
+const OPEN_EASING = 'cubic-bezier(0.22, 0.78, 0.18, 1)';
+const CLOSE_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)';
+
+export default function Lightbox({ state, onClose }: Props) {
+  const [active, setActive] = useState<LightboxState | null>(null);
   const [phase, setPhase] = useState<Phase>('closed');
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
+  const captionRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const imgWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
 
+  useEffect(() => {
+    if (state && !active) {
+      setActive(state);
+      setPhase('opening');
+    }
+  }, [state, active]);
+
   const close = useCallback(() => {
+    if (phase === 'closing' || phase === 'closed') return;
     setPhase('closing');
+
+    const card = cardRef.current;
+    const bg = bgRef.current;
+    const caption = captionRef.current;
+    const imgWrap = imgWrapRef.current;
+    const closeBtn = closeBtnRef.current;
+
+    const opts: KeyframeAnimationOptions = {
+      duration: CLOSE_DURATION,
+      easing: CLOSE_EASING,
+      fill: 'forwards',
+    };
+
+    bg?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
+    closeBtn?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 200 });
+    caption?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 200 });
+    card?.animate(
+      [
+        { opacity: 1, transform: 'scale(1)' },
+        { opacity: 0, transform: 'scale(0.94)' },
+      ],
+      opts,
+    );
+    imgWrap?.animate(
+      [
+        { opacity: 1, transform: 'scale(1)' },
+        { opacity: 0, transform: 'scale(0.94)' },
+      ],
+      opts,
+    );
+
     window.setTimeout(() => {
       setPhase('closed');
+      setActive(null);
       onClose();
-    }, 320);
-  }, [onClose]);
+    }, CLOSE_DURATION);
+  }, [phase, onClose]);
 
   useEffect(() => {
-    if (photo && phase === 'closed') {
-      setPhase('opening');
-      const raf1 = requestAnimationFrame(() => {
-        const raf2 = requestAnimationFrame(() => setPhase('open'));
-        return () => cancelAnimationFrame(raf2);
-      });
-      return () => cancelAnimationFrame(raf1);
-    }
-  }, [photo, phase]);
+    if (phase !== 'opening' || !active) return;
+    const card = cardRef.current;
+    const bg = bgRef.current;
+    const caption = captionRef.current;
+    const imgWrap = imgWrapRef.current;
+    const closeBtn = closeBtnRef.current;
+    if (!card || !bg || !imgWrap) return;
+
+    const raf = requestAnimationFrame(() => {
+      const wrapRect = imgWrap.getBoundingClientRect();
+      const fr = active.fromRect;
+      if (wrapRect.width === 0 || wrapRect.height === 0) {
+        setPhase('open');
+        return;
+      }
+      const wrapCx = wrapRect.left + wrapRect.width / 2;
+      const wrapCy = wrapRect.top + wrapRect.height / 2;
+      const frCx = fr.left + fr.width / 2;
+      const frCy = fr.top + fr.height / 2;
+      const dx = frCx - wrapCx;
+      const dy = frCy - wrapCy;
+      const sx = fr.width / wrapRect.width;
+      const sy = fr.height / wrapRect.height;
+      const s = Math.min(sx, sy);
+
+      const imgAnim = imgWrap.animate(
+        [
+          { transform: `translate(${dx}px, ${dy}px) scale(${s.toFixed(4)})`, opacity: 1 },
+          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+        ],
+        { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
+      );
+
+      bg.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: 360, easing: 'ease-out', fill: 'forwards' },
+      );
+
+      card.animate(
+        [
+          { opacity: 0, transform: 'scale(0.94)' },
+          { opacity: 1, transform: 'scale(1)' },
+        ],
+        { duration: 380, easing: OPEN_EASING, fill: 'forwards', delay: 60 },
+      );
+
+      caption?.animate(
+        [
+          { opacity: 0, transform: 'translateY(8px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ],
+        { duration: 320, delay: 240, easing: 'ease-out', fill: 'both' },
+      );
+
+      closeBtn?.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: 280, delay: 200, easing: 'ease-out', fill: 'forwards' },
+      );
+
+      imgAnim.finished.then(() => setPhase('open')).catch(() => {});
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [phase, active]);
 
   useEffect(() => {
-    if (!photo) return;
+    if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
@@ -60,9 +170,12 @@ export default function Lightbox({ photo, onClose }: Props) {
       document.body.style.overflow = prevOverflow;
       lenis?.start();
     };
-  }, [photo, close]);
+  }, [active, close]);
 
-  if (!mounted || !photo || phase === 'closed') return null;
+  if (!mounted || !active || phase === 'closed') return null;
+
+  const photo = active.photo;
+  const srcSet = photo.srcSet?.map((v) => `${v.src} ${v.width}w`).join(', ');
 
   return createPortal(
     <div
@@ -72,16 +185,18 @@ export default function Lightbox({ photo, onClose }: Props) {
       aria-label={photo.alt}
       onClick={close}
     >
-      <div className="lb__bg" aria-hidden="true" />
+      <div className="lb__bg" ref={bgRef} aria-hidden="true" />
       <div
         className="lb__card"
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="lb__media">
+        <div className="lb__media" ref={imgWrapRef}>
           <img
             className="lb__img"
             src={photo.src}
+            srcSet={srcSet}
+            sizes="100vw"
             width={photo.width}
             height={photo.height}
             alt={photo.alt}
@@ -91,12 +206,14 @@ export default function Lightbox({ photo, onClose }: Props) {
         </div>
         <div
           className="lb__caption"
+          ref={captionRef}
           dangerouslySetInnerHTML={{ __html: photo.captionHtml }}
         />
       </div>
       <button
         type="button"
         className="lb__close"
+        ref={closeBtnRef}
         aria-label="Close"
         onClick={(e) => {
           e.stopPropagation();
@@ -128,6 +245,7 @@ const lightboxStyles = `
     align-items: center;
     justify-content: center;
     padding: 32px;
+    overflow: hidden;
   }
   .lb__bg {
     position: absolute;
@@ -136,11 +254,8 @@ const lightboxStyles = `
     backdrop-filter: blur(28px) saturate(115%);
     -webkit-backdrop-filter: blur(28px) saturate(115%);
     opacity: 0;
-    transition: opacity 320ms ease;
+    will-change: opacity, backdrop-filter;
   }
-  .lb--opening .lb__bg,
-  .lb--open .lb__bg { opacity: 1; }
-  .lb--closing .lb__bg { opacity: 0; }
 
   .lb__card {
     position: relative;
@@ -150,60 +265,55 @@ const lightboxStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: min(1120px, calc(100vw - 64px));
     max-width: min(1120px, calc(100vw - 64px));
+    height: min-content;
     max-height: calc(100vh - 64px);
     box-shadow: 0 28px 80px -30px rgba(28, 22, 12, 0.22);
     opacity: 0;
-    transform: scale(0.82);
-    transition:
-      opacity 360ms ease,
-      transform 380ms cubic-bezier(0.18, 0.78, 0.22, 1);
+    transform: scale(0.94);
     will-change: opacity, transform;
-  }
-  .lb--opening .lb__card,
-  .lb--open .lb__card {
-    opacity: 1;
-    transform: scale(1);
-  }
-  .lb--closing .lb__card {
-    opacity: 0;
-    transform: scale(0.9);
   }
 
   .lb__media {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    max-width: 100%;
-    max-height: calc(100vh - 240px);
+    width: 100%;
+    flex: 1 1 0;
     min-height: 0;
+    transform-origin: center;
+    will-change: transform, opacity;
   }
   .lb__img {
     display: block;
     max-width: 100%;
-    max-height: calc(100vh - 240px);
+    max-height: 100%;
     width: auto;
     height: auto;
-    border-radius: 7px;
     object-fit: contain;
+    border-radius: 7px;
     user-select: none;
   }
 
   .lb__caption {
-    margin-top: 16px;
+    flex: 0 0 auto;
+    margin-top: 18px;
     padding: 0 8px 4px;
     text-align: center;
     color: var(--color-ink);
     width: 100%;
     max-width: 720px;
-    font-family: var(--font-sans);
+    font-family: var(--font-serif);
+    opacity: 0;
   }
   .lb__caption .caption { display: flex; flex-direction: column; align-items: center; }
   .lb__caption .caption__title {
     font-family: var(--font-serif);
     font-size: 22px;
     line-height: 1.2;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
     color: var(--color-ink);
     margin: 0;
   }
@@ -233,6 +343,7 @@ const lightboxStyles = `
     max-width: 58ch;
   }
   .lb__caption .caption__exif {
+    font-family: var(--font-serif);
     font-size: 11px;
     color: color-mix(in oklab, var(--color-ink) 45%, transparent);
     letter-spacing: 0.015em;
@@ -248,7 +359,7 @@ const lightboxStyles = `
     border-radius: 999px;
     border: 0;
     cursor: pointer;
-    background: color-mix(in oklab, var(--color-cream-top) 70%, transparent);
+    background: color-mix(in oklab, var(--color-cream-top) 75%, transparent);
     color: var(--color-ink);
     display: flex;
     align-items: center;
@@ -257,24 +368,22 @@ const lightboxStyles = `
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     opacity: 0;
-    transition: opacity 240ms ease, background-color 200ms ease;
+    transition: background-color 200ms ease;
   }
-  .lb--open .lb__close { opacity: 1; }
   .lb__close:hover {
-    background: color-mix(in oklab, var(--color-cream-top) 92%, transparent);
+    background: color-mix(in oklab, var(--color-cream-top) 95%, transparent);
   }
 
   @media (max-width: 640px) {
     .lb { padding: 16px; }
     .lb__card {
       padding: 12px;
+      width: calc(100vw - 32px);
       max-width: calc(100vw - 32px);
       max-height: calc(100vh - 32px);
       border-radius: 10px;
     }
-    .lb__media,
-    .lb__img { max-height: calc(100vh - 220px); }
-    .lb__caption { margin-top: 12px; padding: 0 4px 4px; }
+    .lb__caption { margin-top: 14px; padding: 0 4px 4px; }
     .lb__caption .caption__title { font-size: 18px; }
     .lb__caption .caption__sub { font-size: 13px; }
     .lb__caption .caption__scene { font-size: 13px; }
@@ -282,10 +391,13 @@ const lightboxStyles = `
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .lb__bg,
     .lb__card,
-    .lb__bg {
-      transition-duration: 80ms !important;
-      transform: none !important;
+    .lb__media,
+    .lb__caption,
+    .lb__close {
+      transition: none !important;
+      animation: none !important;
     }
   }
 `;
