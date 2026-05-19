@@ -13,7 +13,7 @@
       "lat": 47.6694,
       "lng": -122.1239
     },
-    "scene": "Adult Great Blue Heron perched on a mossy branch, fluffed plumes, soft overcast light.",
+    "scene": "Adult Great Blue Heron perched on a mossy branch.",
     "animals": [
       {
         "common_name": "Great Blue Heron",
@@ -39,7 +39,7 @@
       "lat": 47.6694,
       "lng": -122.1239
     },
-    "scene": "Cottontail rabbit emerging from under a conifer hedge, soft natural light.",
+    "scene": "Cottontail rabbit emerging from under a conifer hedge.",
     "animals": [
       {
         "common_name": "Eastern Cottontail",
@@ -65,7 +65,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Whitewater rushing past mossy granite boulders, framed by overhanging conifer and broadleaf foliage.",
+    "scene": "Whitewater rushing past mossy granite boulder.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape — fast-moving creek along the trail. No animal subject."
@@ -84,7 +84,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Granite cliff and conifer ridge in golden-hour light against a soft sky.",
+    "scene": "Granite cliff and conifer ridge in golden-hour light.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape — backlit ridgeline on the approach. No animal subject."
@@ -103,7 +103,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Forest waterfall tucked among hemlocks and underbrush.",
+    "scene": "Forest waterfall hidden among hemlocks and underbrush.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape — small cascade in shaded forest. No animal subject."
@@ -122,7 +122,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Colchuck Lake at first light, glacier-fed waters mirroring the snowy face of Dragontail/Colchuck peaks.",
+    "scene": "Colchuck Lake at first light, Aasgard Pass behind.",
     "animals": [],
     "confidence": "high",
     "notes": "Iconic alpine lake view. No animal subject."
@@ -141,7 +141,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Granite spires emerging from low cloud, framed by lichen-draped conifer branches.",
+    "scene": "Granite spires framed by lichen-draped conifer branches.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape — moody summit detail. No animal subject."
@@ -160,7 +160,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Mountain goat kid stepping along a granite-slab trail near a snow patch.",
+    "scene": "Mountain goat kid traversing Aasgard Pass.",
     "animals": [
       {
         "common_name": "Mountain Goat",
@@ -212,7 +212,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Stark, fissured granite spires with patches of clinging snow.",
+    "scene": "Stark, fissured granite spires.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape — close-up rock detail of the basin's iconic granite. No animal subject."
@@ -231,7 +231,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Hikers crossing a snow-filled alpine basin under stormy cloud cover.",
+    "scene": "Hikers crossing a snow-filled alpine basin above Aasgard Pass.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape with human figures (no wildlife subject) — sense of scale across Aasgard Pass area."
@@ -250,7 +250,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Hoary marmot resting on lichen-spotted granite slabs in alpine sun.",
+    "scene": "Hoary marmot resting on lichen-spotted granite slabs.",
     "animals": [
       {
         "common_name": "Hoary Marmot",
@@ -276,7 +276,7 @@
       "lat": 47.475,
       "lng": -120.798
     },
-    "scene": "Snowmelt waterfall pouring off granite cliffs into an alpine lake, lingering snow patches.",
+    "scene": "Snowmelt waterfall pouring off granite cliffs into an alpine lake.",
     "animals": [],
     "confidence": "high",
     "notes": "Landscape — early-summer melt feeding the basin. No animal subject."
@@ -295,7 +295,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Single sculls rowers stroking past the buoy line at the Vaires-sur-Marne rowing venue.",
+    "scene": "Single sculls rowers passing the final buoy lines at Vaires-sur-Marne.",
     "animals": [],
     "confidence": "high",
     "notes": "Paris 2024 Olympics — rowing, single sculls heat. No wildlife subject."
@@ -314,7 +314,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Great Britain women's eight rowing crew turning toward shore after a race, coxswain visible at the bow.",
+    "scene": "Great Britain women's eight rowing crew at Paris 2024.",
     "animals": [],
     "confidence": "high",
     "notes": "Paris 2024 Olympics — women's 8+ rowing, Team GB. No wildlife subject."
@@ -333,7 +333,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Two French gendarmes in service uniform monitoring the spectator flow at a Paris 2024 venue.",
+    "scene": "Two French gendarmes in service uniform at a Paris 2024 venue.",
     "animals": [],
     "confidence": "high",
     "notes": "Documentary moment — venue security. No wildlife subject."
@@ -371,7 +371,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "French table-tennis player mid-swing over the Paris 2024-branded table, intense competitive focus.",
+    "scene": "Félix Lebrun mid-swing during bronze medal match.",
     "animals": [],
     "confidence": "high",
     "notes": "Paris 2024 Olympics — table tennis, French player (likely Félix Lebrun based on the blond hair and FRA kit)."
@@ -390,7 +390,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Chinese player Fan Zhendong driving a forehand across the table at Truls Möregård of Sweden during the men's singles final.",
+    "scene": "Fan Zhendong driving a backhand across the table at Truls Möregård during the men's singles final.",
     "animals": [],
     "confidence": "high",
     "notes": "Paris 2024 Olympics — table tennis men's singles final, China vs. Sweden. No wildlife subject."
@@ -409,7 +409,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Chestnut show-jumper clearing a Paris-themed fence inside the Versailles arena in front of a packed crowd.",
+    "scene": "Chestnut show-jumper at the Versailles arena.",
     "animals": [
       {
         "common_name": "Domestic Horse",
@@ -435,7 +435,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Costumed performers in 18th-century Versailles court attire and powdered wigs interacting with spectators.",
+    "scene": "Costumed performers in 18th-century Versailles attire and powdered wigs.",
     "animals": [],
     "confidence": "high",
     "notes": "Cultural-program performers in period costume at the Versailles Olympic venue. No wildlife subject."
@@ -454,7 +454,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Grazing sheep close-up, French livestock ear tag clearly visible in the ear.",
+    "scene": "Grazing sheep close-up.",
     "animals": [
       {
         "common_name": "Domestic Sheep",
@@ -480,7 +480,7 @@
       "lat": 43.9167,
       "lng": -69.9659
     },
-    "scene": "Small terrier being petted by relatives in a crowd of robed graduates, ears perked toward the camera.",
+    "scene": "Small terrier during a rainy commencement.",
     "animals": [
       {
         "common_name": "Domestic Dog",
@@ -506,48 +506,10 @@
       "lat": 43.9167,
       "lng": -69.9659
     },
-    "scene": "Top of a green-and-tan striped umbrella beaded with rain, brighter umbrellas blurred behind.",
+    "scene": "Top of an umbrella beaded with rain.",
     "animals": [],
     "confidence": "high",
     "notes": "Documentary detail from a rainy Bowdoin commencement. No animal subject."
-  },
-  "_F9A9979.jpg": {
-    "categories": [
-      "misc"
-    ],
-    "filename": "_F9A9979.jpg",
-    "date": "2025-05-23",
-    "datetime": "2025:05:23 21:20:47",
-    "width": 6960,
-    "height": 4640,
-    "location": {
-      "name": "Brunswick, Maine, USA",
-      "lat": 43.9167,
-      "lng": -69.9659
-    },
-    "scene": "Embossed Bowdoin College crest and gilded gothic lettering on a black diploma cover, raking light.",
-    "animals": [],
-    "confidence": "high",
-    "notes": "Graduation keepsake detail shot. No animal subject."
-  },
-  "_F9A9994.jpg": {
-    "categories": [
-      "misc"
-    ],
-    "filename": "_F9A9994.jpg",
-    "date": "2025-05-23",
-    "datetime": "2025:05:23 21:25:20",
-    "width": 6960,
-    "height": 4640,
-    "location": {
-      "name": "Brunswick, Maine, USA",
-      "lat": 43.9167,
-      "lng": -69.9659
-    },
-    "scene": "Black mortarboard tassel with the class-year charm, cap edge in sharp focus.",
-    "animals": [],
-    "confidence": "high",
-    "notes": "Graduation cap detail. No animal subject."
   },
   "_F9A0264.jpg": {
     "categories": [
@@ -563,7 +525,7 @@
       "lat": 48.6175,
       "lng": -113.7609
     },
-    "scene": "Dew-jeweled spider web stretched inside a hollow log, late-spring backlight.",
+    "scene": "Dewy spider web spanning a hollow log.",
     "animals": [],
     "confidence": "high",
     "notes": "No animal subject — macro abstract of spider web with morning dew."
@@ -582,7 +544,7 @@
       "lat": 48.6175,
       "lng": -113.7609
     },
-    "scene": "Small yellow songbird perched on a thin branch among bare twigs, sun-dappled forest edge.",
+    "scene": "Small yellow songbird perched on a thin branch.",
     "animals": [
       {
         "common_name": "Yellow Warbler",
@@ -608,7 +570,7 @@
       "lat": 48.6175,
       "lng": -113.7609
     },
-    "scene": "Close portrait of a young mule deer, oversized ears alert toward the camera.",
+    "scene": "Portrait of a young mule deer.",
     "animals": [
       {
         "common_name": "Mule Deer",
@@ -634,7 +596,7 @@
       "lat": 48.6175,
       "lng": -113.7609
     },
-    "scene": "Steller's Jay on moss-covered ground in conifer forest, iridescent blue wings and tail.",
+    "scene": "Steller's Jay on moss-covered ground in conifer forest.",
     "animals": [
       {
         "common_name": "Steller's Jay",
@@ -660,7 +622,7 @@
       "lat": 48.6175,
       "lng": -113.7609
     },
-    "scene": "Columbian ground squirrel standing on hind legs in spring meadow vegetation.",
+    "scene": "Columbian ground squirrel in spring meadow vegetation.",
     "animals": [
       {
         "common_name": "Columbian Ground Squirrel",
@@ -686,7 +648,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "White seabird with sharp black wingtips banking across a pastel rainbow-streaked sky.",
+    "scene": "White seabird with black wingtips gliding across a rainbow-streaked sky.",
     "animals": [
       {
         "common_name": "Black-legged Kittiwake",
@@ -712,7 +674,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Tufted Puffin in breeding plumage paddling in choppy sea, water beading on dark feathers.",
+    "scene": "Tufted Puffin in choppy sea.",
     "animals": [
       {
         "common_name": "Tufted Puffin",
@@ -738,7 +700,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Coastal brown bear pausing on a sedge flat beside a tidal channel, full-body profile.",
+    "scene": "Coastal brown bear pausing on a sedge flat beside a tidal channel.",
     "animals": [
       {
         "common_name": "Brown Bear (Coastal Grizzly)",
@@ -764,7 +726,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Massive brown bear walking through coastal grass, broad shoulder hump prominent.",
+    "scene": "Male brown bear posturing in coastal grass.",
     "animals": [
       {
         "common_name": "Brown Bear (Coastal Grizzly)",
@@ -790,7 +752,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Brown bear close-up profile with grass between its lips while grazing.",
+    "scene": "Brown bear profile.",
     "animals": [
       {
         "common_name": "Brown Bear (Coastal Grizzly)",
@@ -842,7 +804,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Brown bear seated in tall grass, tongue out in a soft, almost expressive moment.",
+    "scene": "Brown bear seated in tall grass, mid yawn.",
     "animals": [
       {
         "common_name": "Brown Bear (Coastal Grizzly)",
@@ -868,7 +830,7 @@
       "lat": 58.505,
       "lng": -155.0896
     },
-    "scene": "Brown bear rolling in the grass, paws raised playfully — distinctly cub-like posture.",
+    "scene": "Brown bear rolling in the grass, paws raised playfully.",
     "animals": [
       {
         "common_name": "Brown Bear (Coastal Grizzly)",
@@ -894,7 +856,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "Two shorebirds resting close together on bright sand, eye-level perspective.",
+    "scene": "Two shorebirds resting close together.",
     "animals": [
       {
         "common_name": "Willet",
@@ -926,7 +888,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "Pair of Willets resting on the beach, close-cropped portrait.",
+    "scene": "Pair of Willets resting on the beach.",
     "animals": [
       {
         "common_name": "Willet",
@@ -952,7 +914,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "Kayaker's hand extended toward a curious manatee surfacing alongside the boat.",
+    "scene": "Kayaker's hand extended toward a curious manatee surfacing.",
     "animals": [
       {
         "common_name": "West Indian Manatee",
@@ -978,7 +940,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "Brown Pelican gliding low against pale winter sky, wings curled mid-stroke.",
+    "scene": "Brown Pelican gliding low against pale winter sky.",
     "animals": [
       {
         "common_name": "Brown Pelican",
@@ -1004,7 +966,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "White Ibis foraging among mangrove roots at the water's edge, golden-hour side light.",
+    "scene": "White Ibis foraging among mangrove roots, mid-blink.",
     "animals": [
       {
         "common_name": "White Ibis",
@@ -1030,7 +992,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "Two White Ibises perched in bare branches against deep blue sky.",
+    "scene": "Two White Ibises perched in bare branches.",
     "animals": [
       {
         "common_name": "White Ibis",
@@ -1056,7 +1018,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "Large iguana basking on a sun-warmed branch, spiny crest extended.",
+    "scene": "Large iguana basking on a sun-warmed branch.",
     "animals": [
       {
         "common_name": "Green Iguana",
@@ -1082,7 +1044,7 @@
       "lat": 26.4404,
       "lng": -82.1137
     },
-    "scene": "American Alligator partially submerged, eye and ridged back creating a low silhouette on still water.",
+    "scene": "American Alligator partially submerged.",
     "animals": [
       {
         "common_name": "American Alligator",
@@ -1108,7 +1070,7 @@
       "lat": 38.0705,
       "lng": -122.9176
     },
-    "scene": "Rugged Point Reyes headland jutting into the Pacific, surf breaking against sea stacks.",
+    "scene": "Rugged Point Reyes headland jutting into the Pacific.",
     "animals": [],
     "confidence": "high",
     "notes": "Coastal landscape — Point Reyes National Seashore cliffs. No animal subject."
@@ -1127,7 +1089,7 @@
       "lat": 38.0705,
       "lng": -122.9176
     },
-    "scene": "Bull tule elk in profile, large branching antlers, grazing on coastal grassland with hills behind.",
+    "scene": "Bull tule elk in profile with large branching antlers.",
     "animals": [
       {
         "common_name": "Tule Elk",
@@ -1153,7 +1115,7 @@
       "lat": 38.0705,
       "lng": -122.9176
     },
-    "scene": "Bull tule elk bedded in grass, looking directly at the camera, antlers symmetrically framed against the rolling Inverness Ridge.",
+    "scene": "Bull tule elk on Inverness Ridge.",
     "animals": [
       {
         "common_name": "Tule Elk",
@@ -1179,7 +1141,7 @@
       "lat": 36.9637,
       "lng": -122.0009
     },
-    "scene": "Whale surfacing with a sun-lit 'rainblow' — rainbow forming in the spout's mist against a deep-blue Monterey Bay swell.",
+    "scene": "Whale surfacing with a sun-lit \"rainblow\".",
     "animals": [
       {
         "common_name": "Humpback Whale",
@@ -1205,7 +1167,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Pont Alexandre III dressed for the Games — an Olympic banner and a ring of national flags spanning the bridge, a sightseeing ferry slipping beneath.",
+    "scene": "Pont Alexandre III dressed for the 2024 Olympic Games.",
     "animals": [],
     "confidence": "high",
     "notes": "Bridge view of the Seine during the Paris 2024 Olympics."
@@ -1224,7 +1186,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Stone winged figure on the Pont Alexandre III, anti-pigeon netting strung along the cornice behind her.",
+    "scene": "Stone winged figure on the Pont Alexandre III.",
     "animals": [],
     "confidence": "high",
     "notes": "Detail of one of the bridge's sculpted spandrel figures."
@@ -1243,7 +1205,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "The Eiffel Tower wearing the Olympic rings for the summer Games, clear midsummer sky behind.",
+    "scene": "The Eiffel Tower outfitted with Olympic rings for the summer Games.",
     "animals": [],
     "confidence": "high",
     "notes": "Vertical portrait of the tower in its Games dress."
@@ -1262,7 +1224,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Triple jumper bounding off the takeoff board on the violet track at the Stade de France, mid-flight in the second phase.",
+    "scene": "Long jumper off the takeoff board on the violet track at the Stade de France.",
     "animals": [],
     "confidence": "high",
     "notes": "Athletics, Stade de France, evening session."
@@ -1281,7 +1243,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Triple jumper extending over the pit with the distance markers — 4, 5, 6, 7 metres — stretched out beneath the takeoff.",
+    "scene": "Long jumper extending over the pit.",
     "animals": [],
     "confidence": "high",
     "notes": "Athletics, Stade de France."
@@ -1300,7 +1262,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Lead pack of the men's 1500m boxed up coming around the bend — Kenyan singlets in front, Norway's Ingebrigtsen tucked tight on the outside.",
+    "scene": "Lead pack of the men's 1500m final coming around the bend; Norway's Ingebrigtsen in the lead.",
     "animals": [],
     "confidence": "high",
     "notes": "Athletics, Stade de France."
@@ -1338,7 +1300,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Olympic skateboarder catching the deck mid-flip against the rings at the Place de la Concorde course.",
+    "scene": "Olympic skateboarder at Place de la Concorde.",
     "animals": [],
     "confidence": "high",
     "notes": "Skateboarding finals, La Concorde."
@@ -1357,7 +1319,7 @@
       "lat": 48.8589,
       "lng": 2.32
     },
-    "scene": "Skater carving the lip of the Paris 2024 bowl at Place de la Concorde, the painted course branding wrapped around the coping.",
+    "scene": "Skater carving the lip of the Paris 2024 bowl at Place de la Concorde.",
     "animals": [],
     "confidence": "high",
     "notes": "Skateboarding street course, La Concorde."
@@ -1376,7 +1338,7 @@
       "lat": 36.9594,
       "lng": -122.0309
     },
-    "scene": "Whitewater spray churning along the hull on a January whale-watching run out of Monterey Bay.",
+    "scene": "Whitewater spray on a January whale-watching trip out of Monterey Bay.",
     "animals": [],
     "confidence": "high",
     "notes": "Wake detail from the boat."
