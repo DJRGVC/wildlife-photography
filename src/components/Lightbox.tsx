@@ -136,18 +136,16 @@ export default function Lightbox({ state, onClose }: Props) {
   }, [phase, active, onClose]);
 
   // useLayoutEffect (not useEffect) so the WAAPI animations are applied
-  // synchronously after React commits but BEFORE the browser paints — so
-  // there is no 1-frame flash of the card at its final centered position
-  // before the FLIP transform "snaps" it back to the thumbnail.
+  // synchronously after React commits but BEFORE the browser paints — no
+  // 1-frame flash of the card at its final centered position before the
+  // FLIP transform "snaps" it back to the thumbnail.
   //
-  // For first-click on a photo, the WebP variant isn't cached yet — the
-  // <img>'s layout isn't fully computed, so getBoundingClientRect returns
-  // 0 and computeFlip() returns null. Previously we bailed entirely, which
-  // meant NO animation ran (card popped to center with no transition).
-  // Now we always fade the backdrop in immediately for visual feedback,
-  // then defer the card animations until the image is actually loaded so
-  // the FLIP can compute correctly. The card stays hidden (opacity: 0 in
-  // CSS) until its WAAPI starts.
+  // Animations run IMMEDIATELY — never wait for the image to load. The
+  // <img> has aspect-ratio set inline (from photo.width/height), so the
+  // browser computes its constrained rendered size before the bytes
+  // arrive. That makes getBoundingClientRect return real numbers on
+  // first click, so FLIP works on uncached images too, and the LQIP
+  // background fills the space until the WebP arrives.
   useLayoutEffect(() => {
     if (phase !== 'opening' || !active) return;
     const card = cardRef.current;
@@ -157,8 +155,6 @@ export default function Lightbox({ state, onClose }: Props) {
     const caption = captionRef.current;
     const closeBtn = closeBtnRef.current;
     if (!card || !img || !bg) return;
-
-    let cancelled = false;
 
     // Fade the backdrop immediately so something happens on click even
     // if the card is waiting for the image to load. The blur radius
@@ -181,70 +177,48 @@ export default function Lightbox({ state, onClose }: Props) {
       { duration: 500, easing: 'ease-out', fill: 'both' },
     );
 
-    const startCardAnimations = () => {
-      if (cancelled) return;
-      const flip = computeFlip(card, img, active.fromRect);
-      const cardFromTransform = flip
-        ? `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`
-        : 'scale(0.88)';
+    // Run card animations immediately — never wait for image load.
+    // The img has aspect-ratio set inline, so getBoundingClientRect
+    // returns its final constrained size from frame zero. The LQIP
+    // background shows in the space until the WebP arrives.
+    const flip = computeFlip(card, img, active.fromRect);
+    const cardFromTransform = flip
+      ? `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`
+      : 'scale(0.88)';
 
-      const cardAnim = card.animate(
-        [
-          { transform: cardFromTransform, opacity: 1 },
-          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-        ],
-        { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
-      );
+    const cardAnim = card.animate(
+      [
+        { transform: cardFromTransform, opacity: 1 },
+        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      ],
+      { duration: OPEN_DURATION, easing: OPEN_EASING, fill: 'both' },
+    );
 
-      cardBg?.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        {
-          duration: OPEN_DURATION * 0.85,
-          easing: 'ease-out',
-          fill: 'both',
-        },
-      );
+    cardBg?.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      {
+        duration: OPEN_DURATION * 0.85,
+        easing: 'ease-out',
+        fill: 'both',
+      },
+    );
 
-      caption?.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        {
-          duration: OPEN_DURATION * 0.5,
-          delay: OPEN_DURATION * 0.55,
-          easing: 'ease-out',
-          fill: 'both',
-        },
-      );
+    caption?.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      {
+        duration: OPEN_DURATION * 0.5,
+        delay: OPEN_DURATION * 0.55,
+        easing: 'ease-out',
+        fill: 'both',
+      },
+    );
 
-      closeBtn?.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        { duration: 320, delay: 320, easing: 'ease-out', fill: 'both' },
-      );
+    closeBtn?.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 320, delay: 320, easing: 'ease-out', fill: 'both' },
+    );
 
-      cardAnim.finished.then(() => setPhase('open')).catch(() => {});
-    };
-
-    if (img.complete && img.naturalWidth > 0) {
-      // Image already cached → run animations immediately, no delay.
-      startCardAnimations();
-    } else {
-      // Wait for image to load before measuring + animating. Failsafe
-      // timer guarantees animations eventually run even if load/error
-      // events never fire.
-      const onReady = () => {
-        img.removeEventListener('load', onReady);
-        img.removeEventListener('error', onReady);
-        startCardAnimations();
-      };
-      img.addEventListener('load', onReady, { once: true });
-      img.addEventListener('error', onReady, { once: true });
-      const failsafe = window.setTimeout(onReady, 1500);
-      return () => {
-        cancelled = true;
-        img.removeEventListener('load', onReady);
-        img.removeEventListener('error', onReady);
-        window.clearTimeout(failsafe);
-      };
-    }
+    cardAnim.finished.then(() => setPhase('open')).catch(() => {});
   }, [phase, active]);
 
   useEffect(() => {
@@ -299,15 +273,26 @@ export default function Lightbox({ state, onClose }: Props) {
             alt={photo.alt}
             draggable={false}
             fetchPriority="high"
-            style={
-              photo.lqip
+            style={{
+              // Setting aspect-ratio explicitly (in addition to width/
+              // height attrs) is the most reliable way to get the browser
+              // — Firefox in particular — to compute the constrained
+              // rendered size from CSS max-width/max-height BEFORE the
+              // image data is loaded. Without this, getBoundingClientRect
+              // returns 0 on first click for uncached images, which
+              // breaks the FLIP scale calculation.
+              aspectRatio:
+                photo.width && photo.height
+                  ? `${photo.width} / ${photo.height}`
+                  : undefined,
+              ...(photo.lqip
                 ? {
                     backgroundImage: `url(${photo.lqip})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }
-                : undefined
-            }
+                : {}),
+            }}
           />
         </div>
         <div
