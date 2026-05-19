@@ -61,7 +61,13 @@ export default function Lightbox({ state, onClose }: Props) {
 
   useEffect(() => setMounted(true), []);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so the state→active mapping happens
+  // synchronously in the same paint cycle as the parent's state update.
+  // Otherwise there's a 1-frame gap between Gallery setting the clicked
+  // thumb to visibility:hidden and Lightbox actually rendering its
+  // portal — the user sees the empty cream gap where the thumb was for a
+  // single frame, which reads as a white flicker on click.
+  useLayoutEffect(() => {
     if (state && !active) {
       setActive(state);
       setPhase('opening');
