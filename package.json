@@ -12,7 +12,7 @@
     "build:photos": "tsx scripts/build-photo-index.ts",
     "prebuild": "npm run build:photos",
     "build": "astro build",
-    "build:cf": "tsx scripts/pull-photos.ts && npm run build:photos && astro build",
+    "build:cf": "tsx scripts/pull-photos.ts && npm run build:photos && astro build && node scripts/strip-originals.mjs",
     "preview": "astro preview",
     "sync-portfolio": "tsx scripts/sync-portfolio.ts && npm run build:photos",
     "edit-captions": "tsx scripts/edit-captions.ts",
