@@ -5,19 +5,28 @@ import imageData from '../image-data.json';
 export const SECTIONS = ['wildlife', 'misc'] as const;
 export type Section = (typeof SECTIONS)[number];
 
+export type AnimalEntry = {
+  common_name: string;
+  scientific_name: string;
+  subject: string;
+  notes: string;
+};
+
 export type PhotoMeta = {
   section: Section;
   width: number;
   height: number;
-  animal: string;
-  location: string;
   date: string;
   dateFormatted: string;
+  location: string;
+  locationCoords?: { lat: number; lng: number };
+  scene: string;
+  animals: readonly AnimalEntry[];
+  notes: string;
+  confidence: string;
   camera: string;
   lens: string;
   exposure: string;
-  keywords: readonly string[];
-  caption: string;
   lqip: string;
 };
 
@@ -59,7 +68,7 @@ async function buildPhoto(
   const meta = readMeta(key);
   if (!meta) {
     console.warn(
-      `[lib/photos] no image-data.json entry for ${key}; run \`npx tsx scripts/build-photo-index.ts\``,
+      `[lib/photos] no image-data.json entry for ${key}; run \`npm run build:photos\``,
     );
     return null;
   }

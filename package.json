@@ -14,6 +14,7 @@
     "build": "astro build",
     "build:cf": "tsx scripts/pull-photos.ts && npm run build:photos && astro build",
     "preview": "astro preview",
+    "sync-portfolio": "tsx scripts/sync-portfolio.ts && npm run build:photos",
     "push-photos": "tsx scripts/push-photos.ts",
     "pull-photos": "tsx scripts/pull-photos.ts",
     "import-photos": "bash scripts/import-photos.sh",

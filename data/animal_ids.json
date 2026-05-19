@@ -1,0 +1,1194 @@
+{
+  "_F9A0130.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0130.jpg",
+    "date": "2024-06-27",
+    "datetime": "2024:06:27 00:56:40",
+    "width": 2558,
+    "height": 3415,
+    "location": {
+      "name": "Redmond, Washington, USA",
+      "lat": 47.6694,
+      "lng": -122.1239
+    },
+    "scene": "Adult Great Blue Heron perched on a mossy branch, fluffed plumes, soft overcast light.",
+    "animals": [
+      {
+        "common_name": "Great Blue Heron",
+        "scientific_name": "Ardea herodias",
+        "subject": "primary",
+        "notes": "Adult; long yellow dagger bill, blue-gray body, distinctive black eye stripe and shaggy chest plumes."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A0168.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0168.jpg",
+    "date": "2024-06-27",
+    "datetime": "2024:06:27 07:43:31",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Redmond, Washington, USA",
+      "lat": 47.6694,
+      "lng": -122.1239
+    },
+    "scene": "Cottontail rabbit emerging from under a conifer hedge, soft natural light.",
+    "animals": [
+      {
+        "common_name": "Eastern Cottontail",
+        "scientific_name": "Sylvilagus floridanus",
+        "subject": "primary",
+        "notes": "Introduced and now common in suburban western Washington; brownish-gray fur, white nose, prominent ears with rusty cast."
+      }
+    ],
+    "confidence": "medium",
+    "notes": null
+  },
+  "_F9A0606.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0606.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 18:26:18",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Whitewater rushing past mossy granite boulders, framed by overhanging conifer and broadleaf foliage.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Landscape \u2014 fast-moving creek along the trail. No animal subject."
+  },
+  "_F9A0612.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0612.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 18:33:24",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Granite cliff and conifer ridge in golden-hour light against a soft sky.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Landscape \u2014 backlit ridgeline on the approach. No animal subject."
+  },
+  "_F9A0646.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0646.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 19:16:09",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Forest waterfall tucked among hemlocks and underbrush.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Landscape \u2014 small cascade in shaded forest. No animal subject."
+  },
+  "_F9A0682.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0682.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 20:28:22",
+    "width": 6665,
+    "height": 4443,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Colchuck Lake at first light, glacier-fed waters mirroring the snowy face of Dragontail/Colchuck peaks.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Iconic alpine lake view. No animal subject."
+  },
+  "_F9A0694.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0694.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 21:01:16",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Granite spires emerging from low cloud, framed by lichen-draped conifer branches.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Landscape \u2014 moody summit detail. No animal subject."
+  },
+  "_F9A0726 (1).jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0726 (1).jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 22:18:43",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Mountain goat kid stepping along a granite-slab trail near a snow patch.",
+    "animals": [
+      {
+        "common_name": "Mountain Goat",
+        "scientific_name": "Oreamnos americanus",
+        "subject": "primary",
+        "notes": "Juvenile (kid); short emerging horns and the longer, shaggy white coat \u2014 classic Enchantments resident. The basin's habituated mountain goats are a signature wildlife sighting here."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A0744.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0744.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 23:28:52",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Small chipmunk foraging in alpine wildflowers among lichen-stained rock.",
+    "animals": [
+      {
+        "common_name": "Yellow-pine Chipmunk",
+        "scientific_name": "Neotamias amoenus",
+        "subject": "primary",
+        "notes": "Distinguishable from ground squirrels by the stripes that extend through the face. Common in the Cascades' subalpine zone. (Townsend's Chipmunk possible but typically darker and lower-elevation.)"
+      }
+    ],
+    "confidence": "medium",
+    "notes": null
+  },
+  "_F9A0766.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0766.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 23:33:22",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Stark, fissured granite spires with patches of clinging snow.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Landscape \u2014 close-up rock detail of the basin's iconic granite. No animal subject."
+  },
+  "_F9A0779.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0779.jpg",
+    "date": "2024-06-29",
+    "datetime": "2024:06:29 23:34:24",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Hikers crossing a snow-filled alpine basin under stormy cloud cover.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Landscape with human figures (no wildlife subject) \u2014 sense of scale across Aasgard Pass area."
+  },
+  "_F9A0829.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0829.jpg",
+    "date": "2024-06-30",
+    "datetime": "2024:06:30 00:13:19",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Hoary marmot resting on lichen-spotted granite slabs in alpine sun.",
+    "animals": [
+      {
+        "common_name": "Hoary Marmot",
+        "scientific_name": "Marmota caligata",
+        "subject": "primary",
+        "notes": "Silvery 'hoary' shoulders, contrasting darker face and feet, stocky alpine body \u2014 the marmot of the high Cascades. Often heard whistling from boulder fields here."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A0884.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0884.jpg",
+    "date": "2024-06-30",
+    "datetime": "2024:06:30 01:19:00",
+    "width": 6931,
+    "height": 4621,
+    "location": {
+      "name": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+      "lat": 47.475,
+      "lng": -120.798
+    },
+    "scene": "Snowmelt waterfall pouring off granite cliffs into an alpine lake, lingering snow patches.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Landscape \u2014 early-summer melt feeding the basin. No animal subject."
+  },
+  "_F9A2194.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A2194.jpg",
+    "date": "2024-08-02",
+    "datetime": "2024:08:02 12:37:33",
+    "width": 5427,
+    "height": 2834,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Single sculls rowers stroking past the buoy line at the Vaires-sur-Marne rowing venue.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Paris 2024 Olympics \u2014 rowing, single sculls heat. No wildlife subject."
+  },
+  "_F9A2673.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A2673.jpg",
+    "date": "2024-08-02",
+    "datetime": "2024:08:02 14:40:43",
+    "width": 3063,
+    "height": 5289,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Great Britain women's eight rowing crew turning toward shore after a race, coxswain visible at the bow.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Paris 2024 Olympics \u2014 women's 8+ rowing, Team GB. No wildlife subject."
+  },
+  "_F9A3015.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A3015.jpg",
+    "date": "2024-08-02",
+    "datetime": "2024:08:02 15:25:37",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Two French gendarmes in service uniform monitoring the spectator flow at a Paris 2024 venue.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Documentary moment \u2014 venue security. No wildlife subject."
+  },
+  "_F9A3335-Enhanced-NR.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A3335-Enhanced-NR.jpg",
+    "date": "2024-08-02",
+    "datetime": "2024:08:02 23:45:45",
+    "width": 6682,
+    "height": 4436,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Ukrainian fencers celebrating mid-leap on the piste after a winning bout.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Paris 2024 Olympics \u2014 Ukrainian fencing team celebration (women's sabre based on the gear). No wildlife subject."
+  },
+  "_F9A3468-Enhanced-NR.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A3468-Enhanced-NR.jpg",
+    "date": "2024-08-03",
+    "datetime": "2024:08:03 16:35:36",
+    "width": 5819,
+    "height": 4042,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "French table-tennis player mid-swing over the Paris 2024-branded table, intense competitive focus.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Paris 2024 Olympics \u2014 table tennis, French player (likely F\u00e9lix Lebrun based on the blond hair and FRA kit)."
+  },
+  "_F9A3972-Enhanced-NR.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A3972-Enhanced-NR.jpg",
+    "date": "2024-08-03",
+    "datetime": "2024:08:03 17:46:35",
+    "width": 3493,
+    "height": 4512,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Chinese player Fan Zhendong driving a forehand across the table at Truls M\u00f6reg\u00e5rd of Sweden during the men's singles final.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Paris 2024 Olympics \u2014 table tennis men's singles final, China vs. Sweden. No wildlife subject."
+  },
+  "_F9A4572.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A4572.jpg",
+    "date": "2024-08-05",
+    "datetime": "2024:08:05 14:32:26",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Chestnut show-jumper clearing a Paris-themed fence inside the Versailles arena in front of a packed crowd.",
+    "animals": [
+      {
+        "common_name": "Domestic Horse",
+        "scientific_name": "Equus ferus caballus",
+        "subject": "primary",
+        "notes": "Sport horse (likely Warmblood) in Olympic show-jumping competition at the Ch\u00e2teau de Versailles equestrian venue."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A5024.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A5024.jpg",
+    "date": "2024-08-05",
+    "datetime": "2024:08:05 15:34:49",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Costumed performers in 18th-century Versailles court attire and powdered wigs interacting with spectators.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Cultural-program performers in period costume at the Versailles Olympic venue. No wildlife subject."
+  },
+  "_F9A5052.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A5052.jpg",
+    "date": "2024-08-05",
+    "datetime": "2024:08:05 16:35:29",
+    "width": 4640,
+    "height": 6960,
+    "location": {
+      "name": "Paris, France (2024 Olympics)",
+      "lat": 48.8589,
+      "lng": 2.32
+    },
+    "scene": "Grazing sheep close-up, French livestock ear tag clearly visible in the ear.",
+    "animals": [
+      {
+        "common_name": "Domestic Sheep",
+        "scientific_name": "Ovis aries",
+        "subject": "primary",
+        "notes": "Tag prefix 'FR' confirms French origin. Likely encountered at or near the Versailles grounds, where flocks graze the estate's lawns."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A9108.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A9108.jpg",
+    "date": "2025-05-23",
+    "datetime": "2025:05:23 18:53:52",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Brunswick, Maine, USA",
+      "lat": 43.9167,
+      "lng": -69.9659
+    },
+    "scene": "Small terrier being petted by relatives in a crowd of robed graduates, ears perked toward the camera.",
+    "animals": [
+      {
+        "common_name": "Domestic Dog",
+        "scientific_name": "Canis lupus familiaris",
+        "subject": "primary",
+        "notes": "Jack Russell-type terrier; tongue out, looking pleased to be the center of attention at a Bowdoin graduation crowd."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A9596.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A9596.jpg",
+    "date": "2025-05-23",
+    "datetime": "2025:05:23 20:21:53",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Brunswick, Maine, USA",
+      "lat": 43.9167,
+      "lng": -69.9659
+    },
+    "scene": "Top of a green-and-tan striped umbrella beaded with rain, brighter umbrellas blurred behind.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Documentary detail from a rainy Bowdoin commencement. No animal subject."
+  },
+  "_F9A9979.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A9979.jpg",
+    "date": "2025-05-23",
+    "datetime": "2025:05:23 21:20:47",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Brunswick, Maine, USA",
+      "lat": 43.9167,
+      "lng": -69.9659
+    },
+    "scene": "Embossed Bowdoin College crest and gilded gothic lettering on a black diploma cover, raking light.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Graduation keepsake detail shot. No animal subject."
+  },
+  "_F9A9994.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A9994.jpg",
+    "date": "2025-05-23",
+    "datetime": "2025:05:23 21:25:20",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Brunswick, Maine, USA",
+      "lat": 43.9167,
+      "lng": -69.9659
+    },
+    "scene": "Black mortarboard tassel with the class-year charm, cap edge in sharp focus.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Graduation cap detail. No animal subject."
+  },
+  "_F9A0264.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "_F9A0264.jpg",
+    "date": "2025-05-26",
+    "datetime": "2025:05:26 23:06:19",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Glacier National Park, Montana, USA",
+      "lat": 48.6175,
+      "lng": -113.7609
+    },
+    "scene": "Dew-jeweled spider web stretched inside a hollow log, late-spring backlight.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "No animal subject \u2014 macro abstract of spider web with morning dew."
+  },
+  "_F9A0308.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0308.jpg",
+    "date": "2025-05-26",
+    "datetime": "2025:05:26 23:30:28",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Glacier National Park, Montana, USA",
+      "lat": 48.6175,
+      "lng": -113.7609
+    },
+    "scene": "Small yellow songbird perched on a thin branch among bare twigs, sun-dappled forest edge.",
+    "animals": [
+      {
+        "common_name": "Yellow Warbler",
+        "scientific_name": "Setophaga petechia",
+        "subject": "primary",
+        "notes": "Bright yellow body, darker wings; consistent with male Yellow Warbler in spring breeding plumage at Glacier."
+      }
+    ],
+    "confidence": "medium",
+    "notes": null
+  },
+  "_F9A0462-Enhanced-NR (1).jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0462-Enhanced-NR (1).jpg",
+    "date": "2025-05-27",
+    "datetime": "2025:05:27 22:22:35",
+    "width": 4227,
+    "height": 6340,
+    "location": {
+      "name": "Glacier National Park, Montana, USA",
+      "lat": 48.6175,
+      "lng": -113.7609
+    },
+    "scene": "Close portrait of a young mule deer, oversized ears alert toward the camera.",
+    "animals": [
+      {
+        "common_name": "Mule Deer",
+        "scientific_name": "Odocoileus hemionus",
+        "subject": "primary",
+        "notes": "Identifiable by the very large mule-like ears and dark muzzle; juvenile/yearling."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A0709-Enhanced-NR.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A0709-Enhanced-NR.jpg",
+    "date": "2025-05-28",
+    "datetime": "2025:05:28 20:49:54",
+    "width": 6644,
+    "height": 4429,
+    "location": {
+      "name": "Glacier National Park, Montana, USA",
+      "lat": 48.6175,
+      "lng": -113.7609
+    },
+    "scene": "Steller's Jay on moss-covered ground in conifer forest, iridescent blue wings and tail.",
+    "animals": [
+      {
+        "common_name": "Steller's Jay",
+        "scientific_name": "Cyanocitta stelleri",
+        "subject": "primary",
+        "notes": "Black crest and head with pale forehead streaking; deep azure body \u2014 classic Steller's Jay of western coniferous forests."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A1058-Enhanced-NR.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A1058-Enhanced-NR.jpg",
+    "date": "2025-05-29",
+    "datetime": "2025:05:29 04:33:31",
+    "width": 4640,
+    "height": 6960,
+    "location": {
+      "name": "Glacier National Park, Montana, USA",
+      "lat": 48.6175,
+      "lng": -113.7609
+    },
+    "scene": "Columbian ground squirrel standing on hind legs in spring meadow vegetation.",
+    "animals": [
+      {
+        "common_name": "Columbian Ground Squirrel",
+        "scientific_name": "Urocitellus columbianus",
+        "subject": "primary",
+        "notes": "Stocky build, rust-tinged face and limbs, grizzled brown back; characteristic upright sentinel posture. Common in Glacier NP meadows."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A2097 (1).jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A2097 (1).jpg",
+    "date": "2025-06-02",
+    "datetime": "2025:06:02 23:31:16",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "White seabird with sharp black wingtips banking across a pastel rainbow-streaked sky.",
+    "animals": [
+      {
+        "common_name": "Black-legged Kittiwake",
+        "scientific_name": "Rissa tridactyla",
+        "subject": "primary",
+        "notes": "Small yellow bill (no red spot), classic 'ink-dipped' black wingtip with no white mirrors, dark eye \u2014 diagnostic for kittiwake over Mew Gull. Common on the Alaskan coast."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A2284-Enhanced-NR (2).jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A2284-Enhanced-NR (2).jpg",
+    "date": "2025-06-02",
+    "datetime": "2025:06:02 23:51:53",
+    "width": 3220,
+    "height": 2147,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "Tufted Puffin in breeding plumage paddling in choppy sea, water beading on dark feathers.",
+    "animals": [
+      {
+        "common_name": "Tufted Puffin",
+        "scientific_name": "Fratercula cirrhata",
+        "subject": "primary",
+        "notes": "Breeding adult \u2014 long blonde plume tufts behind the eye, white facemask, massive orange-red bill. Breeds in seabird colonies along the Alaskan coast."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A2626.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A2626.jpg",
+    "date": "2025-06-04",
+    "datetime": "2025:06:04 01:17:13",
+    "width": 6472,
+    "height": 4315,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "Coastal brown bear pausing on a sedge flat beside a tidal channel, full-body profile.",
+    "animals": [
+      {
+        "common_name": "Brown Bear (Coastal Grizzly)",
+        "scientific_name": "Ursus arctos",
+        "subject": "primary",
+        "notes": "Katmai's coastal brown bears are the largest of the species; this individual is a healthy adult with rich brown pelage."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A2939.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A2939.jpg",
+    "date": "2025-06-04",
+    "datetime": "2025:06:04 02:42:22",
+    "width": 6492,
+    "height": 4328,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "Massive brown bear walking through coastal grass, broad shoulder hump prominent.",
+    "animals": [
+      {
+        "common_name": "Brown Bear (Coastal Grizzly)",
+        "scientific_name": "Ursus arctos",
+        "subject": "primary",
+        "notes": "Large-bodied adult, likely mature male given the bulk and broad neck. The pronounced shoulder hump is diagnostic for the species."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A2951.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A2951.jpg",
+    "date": "2025-06-04",
+    "datetime": "2025:06:04 02:42:30",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "Brown bear close-up profile with grass between its lips while grazing.",
+    "animals": [
+      {
+        "common_name": "Brown Bear (Coastal Grizzly)",
+        "scientific_name": "Ursus arctos",
+        "subject": "primary",
+        "notes": "Adult; Katmai brown bears graze heavily on protein-rich sedges in early summer before the salmon runs begin."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A3001.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A3001.jpg",
+    "date": "2025-06-04",
+    "datetime": "2025:06:04 02:45:05",
+    "width": 2767,
+    "height": 4151,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "Pale, almost cream-colored brown bear lowering its head into sedge meadow.",
+    "animals": [
+      {
+        "common_name": "Brown Bear (Coastal Grizzly)",
+        "scientific_name": "Ursus arctos",
+        "subject": "primary",
+        "notes": "Notably blonde individual \u2014 coat color varies widely in Katmai bears. Concave dished face and prominent dorsal hump confirm the species."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A3198 (1).jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A3198 (1).jpg",
+    "date": "2025-06-04",
+    "datetime": "2025:06:04 03:20:57",
+    "width": 3041,
+    "height": 4561,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "Brown bear seated in tall grass, tongue out in a soft, almost expressive moment.",
+    "animals": [
+      {
+        "common_name": "Brown Bear (Coastal Grizzly)",
+        "scientific_name": "Ursus arctos",
+        "subject": "primary",
+        "notes": "Likely a sub-adult or smaller female given the proportions \u2014 slimmer face and lighter build than the dominant males."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A3355-Enhanced-NR.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A3355-Enhanced-NR.jpg",
+    "date": "2025-06-04",
+    "datetime": "2025:06:04 03:34:16",
+    "width": 3175,
+    "height": 2117,
+    "location": {
+      "name": "Katmai National Park, Alaska, USA",
+      "lat": 58.505,
+      "lng": -155.0896
+    },
+    "scene": "Brown bear rolling in the grass, paws raised playfully \u2014 distinctly cub-like posture.",
+    "animals": [
+      {
+        "common_name": "Brown Bear (Coastal Grizzly)",
+        "scientific_name": "Ursus arctos",
+        "subject": "primary",
+        "notes": "Honey-colored individual stretching and rolling on its back; this kind of relaxed behavior is common at Katmai when bears are well-fed and unbothered."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251228-_F9A9915.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251228-_F9A9915.jpg",
+    "date": "2025-12-28",
+    "datetime": "2025:12:28 22:25:51",
+    "width": 5298,
+    "height": 3532,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "Two shorebirds resting close together on bright sand, eye-level perspective.",
+    "animals": [
+      {
+        "common_name": "Willet",
+        "scientific_name": "Tringa semipalmata",
+        "subject": "primary",
+        "notes": "Non-breeding plumage; long straight bill, plain gray-brown body."
+      },
+      {
+        "common_name": "Ruddy Turnstone",
+        "scientific_name": "Arenaria interpres",
+        "subject": "secondary",
+        "notes": "Mottled brown-and-white plumage, shorter wedge-shaped bill, characteristic of non-breeding adult."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251228-_F9A9946.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251228-_F9A9946.jpg",
+    "date": "2025-12-28",
+    "datetime": "2025:12:28 22:28:24",
+    "width": 5458,
+    "height": 4640,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "Pair of Willets resting on the beach, close-cropped portrait.",
+    "animals": [
+      {
+        "common_name": "Willet",
+        "scientific_name": "Tringa semipalmata",
+        "subject": "primary",
+        "notes": "Two adults in non-breeding plumage; plain gray bodies, long dark straight bills, white throats."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251228-_F9A0067.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251228-_F9A0067.jpg",
+    "date": "2025-12-28",
+    "datetime": "2025:12:28 23:58:19",
+    "width": 6359,
+    "height": 4239,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "Kayaker's hand extended toward a curious manatee surfacing alongside the boat.",
+    "animals": [
+      {
+        "common_name": "West Indian Manatee",
+        "scientific_name": "Trichechus manatus",
+        "subject": "primary",
+        "notes": "Florida subspecies (T. m. latirostris); rounded gray head surfacing for breath. Common in the warm coastal and estuarine waters of Sanibel."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251229-_F9A0126.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251229-_F9A0126.jpg",
+    "date": "2025-12-29",
+    "datetime": "2025:12:29 00:08:32",
+    "width": 3911,
+    "height": 2607,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "Brown Pelican gliding low against pale winter sky, wings curled mid-stroke.",
+    "animals": [
+      {
+        "common_name": "Brown Pelican",
+        "scientific_name": "Pelecanus occidentalis",
+        "subject": "primary",
+        "notes": "Adult; large hooked bill, pale yellow head with darker brown neck \u2014 typical non-breeding/winter plumage."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251229-_F9A0138.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251229-_F9A0138.jpg",
+    "date": "2025-12-29",
+    "datetime": "2025:12:29 00:22:12",
+    "width": 5916,
+    "height": 3944,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "White Ibis foraging among mangrove roots at the water's edge, golden-hour side light.",
+    "animals": [
+      {
+        "common_name": "White Ibis",
+        "scientific_name": "Eudocimus albus",
+        "subject": "primary",
+        "notes": "Adult; brilliant white plumage, decurved coral-pink bill and red facial skin, characteristic mangrove habitat."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251229-_F9A0153.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251229-_F9A0153.jpg",
+    "date": "2025-12-29",
+    "datetime": "2025:12:29 00:23:57",
+    "width": 4126,
+    "height": 6189,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "Two White Ibises perched in bare branches against deep blue sky.",
+    "animals": [
+      {
+        "common_name": "White Ibis",
+        "scientific_name": "Eudocimus albus",
+        "subject": "primary",
+        "notes": "Two birds; upper appears adult, lower with grayer head suggests immature/sub-adult \u2014 common to see mixed-age groups roosting together."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251229-_F9A0308.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251229-_F9A0308.jpg",
+    "date": "2025-12-29",
+    "datetime": "2025:12:29 01:18:36",
+    "width": 4577,
+    "height": 3051,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "Large iguana basking on a sun-warmed branch, spiny crest extended.",
+    "animals": [
+      {
+        "common_name": "Green Iguana",
+        "scientific_name": "Iguana iguana",
+        "subject": "primary",
+        "notes": "Mature individual (grayer with age); prominent dorsal spines and large jowly dewlap. Invasive but well established across southern Florida."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20251229-_F9A0361.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20251229-_F9A0361.jpg",
+    "date": "2025-12-29",
+    "datetime": "2025:12:29 01:58:13",
+    "width": 4490,
+    "height": 6741,
+    "location": {
+      "name": "Sanibel Island, Florida, USA",
+      "lat": 26.4404,
+      "lng": -82.1137
+    },
+    "scene": "American Alligator partially submerged, eye and ridged back creating a low silhouette on still water.",
+    "animals": [
+      {
+        "common_name": "American Alligator",
+        "scientific_name": "Alligator mississippiensis",
+        "subject": "primary",
+        "notes": "Mid-sized adult, classic eyes-and-nostrils stalking pose, warm tannin-tinted water typical of Sanibel's freshwater sloughs."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20260131-_F9A0412.jpg": {
+    "categories": [
+      "misc"
+    ],
+    "filename": "20260131-_F9A0412.jpg",
+    "date": "2026-01-31",
+    "datetime": "2026:01:31 22:20:07",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Point Reyes National Seashore, California, USA",
+      "lat": 38.0705,
+      "lng": -122.9176
+    },
+    "scene": "Rugged Point Reyes headland jutting into the Pacific, surf breaking against sea stacks.",
+    "animals": [],
+    "confidence": "high",
+    "notes": "Coastal landscape \u2014 Point Reyes National Seashore cliffs. No animal subject."
+  },
+  "20260131-_F9A0561.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20260131-_F9A0561.jpg",
+    "date": "2026-01-31",
+    "datetime": "2026:01:31 23:06:56",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Point Reyes National Seashore, California, USA",
+      "lat": 38.0705,
+      "lng": -122.9176
+    },
+    "scene": "Bull tule elk in profile, large branching antlers, grazing on coastal grassland with hills behind.",
+    "animals": [
+      {
+        "common_name": "Tule Elk",
+        "scientific_name": "Cervus canadensis nannodes",
+        "subject": "primary",
+        "notes": "California-endemic elk subspecies; the Tomales Point herd at Point Reyes is one of the few protected wild populations. Mature bull with full rack."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "20260131-_F9A0626.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20260131-_F9A0626.jpg",
+    "date": "2026-01-31",
+    "datetime": "2026:01:31 23:16:35",
+    "width": 4640,
+    "height": 6960,
+    "location": {
+      "name": "Point Reyes National Seashore, California, USA",
+      "lat": 38.0705,
+      "lng": -122.9176
+    },
+    "scene": "Bull tule elk bedded in grass, looking directly at the camera, antlers symmetrically framed against the rolling Inverness Ridge.",
+    "animals": [
+      {
+        "common_name": "Tule Elk",
+        "scientific_name": "Cervus canadensis nannodes",
+        "subject": "primary",
+        "notes": "Same species and locale as 0561 \u2014 possibly the same bull at rest. Distinctive paler hindquarters and creamy rump patch."
+      }
+    ],
+    "confidence": "high",
+    "notes": null
+  },
+  "_F9A7578.JPG": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "_F9A7578.JPG",
+    "date": "2025-01-01",
+    "datetime": "2025:01:01 23:51:43",
+    "width": 6960,
+    "height": 4640,
+    "location": {
+      "name": "Santa Cruz, California, USA (Monterey Bay whale watching)",
+      "lat": 36.9637,
+      "lng": -122.0009
+    },
+    "scene": "Whale surfacing with a sun-lit 'rainblow' \u2014 rainbow forming in the spout's mist against a deep-blue Monterey Bay swell.",
+    "animals": [
+      {
+        "common_name": "Humpback Whale",
+        "scientific_name": "Megaptera novaeangliae",
+        "subject": "primary",
+        "notes": "Smooth, uniformly dark back and the characteristic low, bushy spout are most consistent with humpback. Gray Whale (Eschrichtius robustus) is the main alternate this time of year on the Monterey Bay southbound migration; gray whales typically show more mottled skin with barnacle/lice patches."
+      }
+    ],
+    "confidence": "medium",
+    "notes": null
+  }
+}

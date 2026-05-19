@@ -1,0 +1,142 @@
+{
+  "2024-06-27": {
+    "geocode_display": "Redmond, King County, Washington, 98052, United States",
+    "lat": 47.6694,
+    "lng": -122.1239,
+    "location": "Redmond, Washington, USA",
+    "location_raw": "Redmond, Washington"
+  },
+  "2024-06-29": {
+    "geocode_display": "The Enchantments, Alpine Lakes Wilderness, Washington (manual)",
+    "lat": 47.475,
+    "lng": -120.798,
+    "location": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+    "location_raw": "The Enchantments Hike (In Washinton, North Cascades I believe)"
+  },
+  "2024-06-30": {
+    "geocode_display": "The Enchantments, Alpine Lakes Wilderness, Washington (manual)",
+    "lat": 47.475,
+    "lng": -120.798,
+    "location": "The Enchantments, Alpine Lakes Wilderness, Washington, USA",
+    "location_raw": "The Enchantments Hike (In Washinton, North Cascades I believe)"
+  },
+  "2024-08-01": {
+    "geocode_display": "Paris, \u00cele-de-France, France",
+    "lat": 48.8589,
+    "lng": 2.32,
+    "location": "Paris, France (2024 Olympics)",
+    "location_raw": "Paris Olympics (2024)"
+  },
+  "2024-08-02": {
+    "geocode_display": "Paris, \u00cele-de-France, France",
+    "lat": 48.8589,
+    "lng": 2.32,
+    "location": "Paris, France (2024 Olympics)",
+    "location_raw": "Paris Olympics (2024)"
+  },
+  "2024-08-03": {
+    "geocode_display": "Paris, \u00cele-de-France, France",
+    "lat": 48.8589,
+    "lng": 2.32,
+    "location": "Paris, France (2024 Olympics)",
+    "location_raw": "Paris Olympics (2024)"
+  },
+  "2024-08-05": {
+    "geocode_display": "Paris, \u00cele-de-France, France",
+    "lat": 48.8589,
+    "lng": 2.32,
+    "location": "Paris, France (2024 Olympics)",
+    "location_raw": "Paris Olympics (2024)"
+  },
+  "2024-08-06": {
+    "geocode_display": "Paris, \u00cele-de-France, France",
+    "lat": 48.8589,
+    "lng": 2.32,
+    "location": "Paris, France (2024 Olympics)",
+    "location_raw": "Paris Olympics (2024)"
+  },
+  "2025-01-01": {
+    "geocode_display": "Santa Cruz Harbor, Santa Cruz County, California, USA",
+    "lat": 36.9637,
+    "lng": -122.0009,
+    "location": "Santa Cruz, California, USA (Monterey Bay whale watching)",
+    "location_raw": "Santa Cruz whale watching"
+  },
+  "2025-01-02": {
+    "geocode_display": "Santa Cruz Harbor, Santa Cruz County, California, USA",
+    "lat": 36.9637,
+    "lng": -122.0009,
+    "location": "Santa Cruz, California, USA (Monterey Bay whale watching)",
+    "location_raw": "Santa Cruz whale watching"
+  },
+  "2025-05-23": {
+    "geocode_display": "Brunswick, Cumberland County, Maine, 04011, United States",
+    "lat": 43.9167,
+    "lng": -69.9659,
+    "location": "Brunswick, Maine, USA",
+    "location_raw": "Brunswick, ME"
+  },
+  "2025-05-26": {
+    "geocode_display": "Glacier National Park, Montana, United States",
+    "lat": 48.6175,
+    "lng": -113.7609,
+    "location": "Glacier National Park, Montana, USA",
+    "location_raw": "Montana (Glacier State park)"
+  },
+  "2025-05-27": {
+    "geocode_display": "Glacier National Park, Montana, United States",
+    "lat": 48.6175,
+    "lng": -113.7609,
+    "location": "Glacier National Park, Montana, USA",
+    "location_raw": "Montana (Glacier State park)"
+  },
+  "2025-05-28": {
+    "geocode_display": "Glacier National Park, Montana, United States",
+    "lat": 48.6175,
+    "lng": -113.7609,
+    "location": "Glacier National Park, Montana, USA",
+    "location_raw": "Montana (Glacier State park)"
+  },
+  "2025-05-29": {
+    "geocode_display": "Glacier National Park, Montana, United States",
+    "lat": 48.6175,
+    "lng": -113.7609,
+    "location": "Glacier National Park, Montana, USA",
+    "location_raw": "Montana (Glacier State park)"
+  },
+  "2025-06-02": {
+    "geocode_display": "Katmai National Park, Alaska, United States",
+    "lat": 58.505,
+    "lng": -155.0896,
+    "location": "Katmai National Park, Alaska, USA",
+    "location_raw": "Alaska (Near Katmai)"
+  },
+  "2025-06-04": {
+    "geocode_display": "Katmai National Park, Alaska, United States",
+    "lat": 58.505,
+    "lng": -155.0896,
+    "location": "Katmai National Park, Alaska, USA",
+    "location_raw": "Alaska (in Katmai nat'l park)"
+  },
+  "2025-12-28": {
+    "geocode_display": "Sanibel Island, Sanibel, Lee County, Florida, 33957, United States",
+    "lat": 26.4404,
+    "lng": -82.1137,
+    "location": "Sanibel Island, Florida, USA",
+    "location_raw": "Florida (Sanibel Island)"
+  },
+  "2025-12-29": {
+    "geocode_display": "Sanibel Island, Sanibel, Lee County, Florida, 33957, United States",
+    "lat": 26.4404,
+    "lng": -82.1137,
+    "location": "Sanibel Island, Florida, USA",
+    "location_raw": "Florida (Sanibel Island)"
+  },
+  "2026-01-31": {
+    "geocode_display": "Point Reyes National Seashore, Point Reyes Station, Marin County, California, 94937, United States",
+    "lat": 38.0705,
+    "lng": -122.9176,
+    "location": "Point Reyes National Seashore, California, USA",
+    "location_raw": "Point Reyes (California)"
+  }
+}
