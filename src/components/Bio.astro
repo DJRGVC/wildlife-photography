@@ -1,45 +1,34 @@
 ---
-const paragraphs = [
-  'Short bio goes here — two or three paragraphs. The page is built for long-form prose alongside the gallery, so this section can grow into an essay later without redesigning anything.',
-  'Edit the text in src/components/Bio.astro. The typography is set up for generous line-height and a comfortable measure of about 640px — long enough to read but never so wide that lines wander.',
-  'Replace this and the paragraph above with your own writing whenever you’re ready.',
-];
 ---
 
-<section id="bio" class="bio">
-  <div class="bio__inner">
-    {paragraphs.map((p) => <p>{p}</p>)}
-  </div>
+<section class="intro">
+  <p>
+    Occasionally, I venture outdoors and point my camera at things&mdash;often
+    animals, but not exclusively. Enjoy a selection of my favorites below.
+  </p>
 </section>
 
 <style>
-  .bio {
-    padding-block: 56px 72px;
+  .intro {
+    padding-block: 40px 56px;
     padding-inline: max(24px, calc((100% - var(--container-gallery)) / 2 + 24px));
   }
 
-  .bio__inner {
-    max-width: var(--container-text);
-  }
-
-  .bio p {
+  .intro p {
     font-family: var(--font-serif);
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.65;
-    margin: 0 0 1.1em 0;
     color: var(--color-ink);
-  }
-
-  .bio p:last-child {
-    margin-bottom: 0;
+    max-width: 580px;
+    margin: 0;
   }
 
   @media (max-width: 600px) {
-    .bio {
-      padding-block: 32px 44px;
+    .intro {
+      padding-block: 24px 36px;
     }
-    .bio p {
-      font-size: 17px;
+    .intro p {
+      font-size: 16px;
     }
   }
 </style>
