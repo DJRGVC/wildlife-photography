@@ -1,9 +1,15 @@
 name = "wildlife-photography"
-pages_build_output_dir = "dist"
 compatibility_date = "2026-05-18"
 
-# R2 binding for the production runtime (not used by current static build,
-# but here for when you want to add Astro endpoints / Workers later).
+# Workers + Static Assets — serves dist/ as a Worker with no JS entrypoint.
+# Switched from the older `pages_build_output_dir` setup because the project
+# was created via the unified Workers UI rather than the legacy Pages UI.
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+# R2 binding for the production runtime (not used by the current static build,
+# but here for when you want to add server-side endpoints later).
 # [[r2_buckets]]
 # binding = "PHOTOS"
 # bucket_name = "wildlife-photography-originals"
