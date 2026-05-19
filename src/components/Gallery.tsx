@@ -312,19 +312,16 @@ const galleryStyles = `
   .gallery__sep-diamond {
     display: inline-block;
     transform: rotate(45deg);
-    background: currentColor;
+    background: color-mix(in oklab, var(--color-ink) 55%, var(--color-cream-bottom) 45%);
     flex: 0 0 auto;
   }
   .gallery__sep-diamond--side {
     width: 6px;
     height: 6px;
-    opacity: 0.75;
   }
   .gallery__sep-diamond--center {
     width: 12px;
     height: 12px;
-    opacity: 1;
-    background: color-mix(in oklab, var(--color-ink) 60%, var(--color-cream-bottom) 40%);
   }
   .gallery__item {
     display: block;
