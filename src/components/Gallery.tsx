@@ -102,6 +102,30 @@ function handleImgLoad(e: React.SyntheticEvent<HTMLImageElement>): void {
   e.currentTarget.classList.add('is-loaded');
 }
 
+// Module-level cache of photos we've already preloaded. Persists for the
+// life of the page so hovering a thumb a second time is a no-op.
+const preloadedSrcs = new Set<string>();
+
+/**
+ * On hover, kick off a background fetch of the lightbox-sized variant of
+ * this photo. By the time the user clicks, the image is in the browser
+ * cache → the lightbox opens with zero load delay.
+ *
+ * Matches the lightbox's own srcset + sizes so the browser picks the
+ * same variant for both. Cheap if the user just glances past — browser
+ * queues, then drops the request once they leave the page.
+ */
+function preloadLightboxImage(p: GalleryPhoto): void {
+  if (preloadedSrcs.has(p.src)) return;
+  preloadedSrcs.add(p.src);
+  const img = new Image();
+  if (p.srcSet && p.srcSet.length > 0) {
+    img.srcset = p.srcSet.map((v) => `${v.src} ${v.width}w`).join(', ');
+    img.sizes = '100vw';
+  }
+  img.src = p.src;
+}
+
 /**
  * Callback ref that handles the SSR-then-hydrate race: if an image was
  * already loaded by the browser before React hydrated (i.e. anything in
@@ -169,6 +193,8 @@ function PhotoAlbumBlock({
                   e.preventDefault();
                   onPick(p, showAnimalTitle, e.currentTarget);
                 }}
+                onMouseEnter={() => preloadLightboxImage(p)}
+                onFocus={() => preloadLightboxImage(p)}
                 onMouseMove={handleTilt}
                 onMouseLeave={resetTilt}
               >
