@@ -77,6 +77,23 @@ function renderCaption(p: GalleryPhoto, showAnimal: boolean): string {
   return parts.join('');
 }
 
+function handleTilt(e: React.MouseEvent<HTMLAnchorElement>): void {
+  const el = e.currentTarget;
+  const rect = el.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / rect.width;
+  const py = (e.clientY - rect.top) / rect.height;
+  const ry = (px - 0.5) * 5;
+  const rx = (0.5 - py) * 5;
+  el.style.setProperty('--tilt-x', `${rx.toFixed(2)}deg`);
+  el.style.setProperty('--tilt-y', `${ry.toFixed(2)}deg`);
+}
+
+function resetTilt(e: React.MouseEvent<HTMLAnchorElement>): void {
+  const el = e.currentTarget;
+  el.style.setProperty('--tilt-x', '0deg');
+  el.style.setProperty('--tilt-y', '0deg');
+}
+
 function PhotoAlbumBlock({
   photos,
   showAnimalTitle,
@@ -91,7 +108,7 @@ function PhotoAlbumBlock({
       <RowsPhotoAlbum
         photos={photos as unknown as Photo[]}
         targetRowHeight={340}
-        spacing={6}
+        spacing={20}
         padding={0}
         defaultContainerWidth={1152}
         rowConstraints={{ singleRowMaxHeight: 480 }}
@@ -112,6 +129,8 @@ function PhotoAlbumBlock({
                 aria-label={alt}
                 target="_blank"
                 rel="noreferrer"
+                onMouseMove={handleTilt}
+                onMouseLeave={resetTilt}
                 style={{ display: 'block', width: ctx.width, height: ctx.height }}
               >
                 <img
@@ -132,7 +151,6 @@ function PhotoAlbumBlock({
                     backgroundImage: `url(${p.lqip})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    transition: 'opacity 200ms ease',
                   }}
                 />
               </a>
@@ -172,14 +190,14 @@ export default function Gallery({ wildlife, misc }: Props) {
         gallery: root,
         children: 'a.gallery__item',
         pswpModule: () => import('photoswipe'),
-        bgOpacity: 0.96,
-        showHideAnimationType: 'fade',
-        showAnimationDuration: 250,
-        hideAnimationDuration: 250,
+        bgOpacity: 1,
+        showHideAnimationType: 'zoom',
+        showAnimationDuration: 420,
+        hideAnimationDuration: 380,
       });
 
       new CaptionPlugin(lb, {
-        type: 'auto',
+        type: 'below',
         captionContent: (slide: { data: { element?: HTMLElement } }) => {
           return slide.data.element?.dataset.captionHtml ?? '';
         },
@@ -235,7 +253,7 @@ export default function Gallery({ wildlife, misc }: Props) {
 
 const galleryStyles = `
   .gallery {
-    padding-block: 8px 96px;
+    padding-block: 8px 120px;
     padding-inline: max(24px, calc((100% - 1200px) / 2 + 24px));
   }
   .gallery--empty {
@@ -259,7 +277,7 @@ const galleryStyles = `
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-block: 80px;
+    margin-block: 96px;
     color: var(--color-ink-faint);
     font-family: var(--font-serif);
     font-size: 24px;
@@ -275,19 +293,38 @@ const galleryStyles = `
     overflow: hidden;
     text-decoration: none;
     cursor: zoom-in;
+    border-radius: 6px;
+    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 220ms ease;
+    will-change: transform;
+    background-color: var(--color-cream-deep);
   }
   .gallery__item img {
-    transition: opacity 200ms ease;
+    transition: transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   @media (hover: hover) {
+    .gallery__item:hover {
+      box-shadow: 0 18px 38px -22px rgba(20, 20, 18, 0.35);
+    }
     .gallery__item:hover img {
-      opacity: 0.85;
+      transform: scale(1.012);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery__item,
+    .gallery__item img {
+      transform: none !important;
+      transition: none !important;
     }
   }
   @media (max-width: 600px) {
     .gallery__sep {
-      margin-block: 56px;
+      margin-block: 64px;
       font-size: 20px;
+    }
+    .gallery__item {
+      border-radius: 4px;
     }
   }
 `;

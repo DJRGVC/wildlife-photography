@@ -28,11 +28,19 @@ const name = 'Daniel Grant';
     position: sticky;
     top: 0;
     z-index: 50;
-    background-color: var(--color-cream);
-    padding-block: 56px 32px;
+    background-color: color-mix(in srgb, var(--color-cream) 80%, transparent);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    padding-block: 24px 20px;
     padding-inline: max(24px, calc((100% - var(--container-gallery)) / 2 + 24px));
     border-bottom: 1px solid transparent;
-    transition: padding 250ms ease, border-color 250ms ease;
+    opacity: var(--header-opacity, 1);
+    transform: translateY(calc((1 - var(--header-opacity, 1)) * -8px));
+    transition: opacity 220ms ease, transform 220ms ease;
+    will-change: opacity, transform;
+  }
+  .site-header[aria-hidden="true"] {
+    pointer-events: none;
   }
 
   .site-header__inner {
@@ -45,11 +53,10 @@ const name = 'Daniel Grant';
 
   .site-header__name {
     font-family: var(--font-serif);
-    font-size: 44px;
+    font-size: 26px;
     line-height: 1.05;
-    letter-spacing: -0.012em;
+    letter-spacing: -0.005em;
     text-decoration: none;
-    transition: font-size 250ms ease;
   }
 
   .site-header__name:hover {
@@ -64,37 +71,37 @@ const name = 'Daniel Grant';
     color: var(--color-ink-soft);
   }
 
-  .site-header.is-compact {
-    padding-block: 14px;
-    border-bottom-color: var(--color-line);
-  }
-
-  .site-header.is-compact .site-header__name {
-    font-size: 17px;
-    letter-spacing: 0;
-  }
-
   @media (max-width: 600px) {
     .site-header {
-      padding-block: 32px 20px;
+      padding-block: 20px 16px;
     }
     .site-header__name {
-      font-size: 30px;
-    }
-    .site-header.is-compact .site-header__name {
-      font-size: 16px;
+      font-size: 22px;
     }
   }
 </style>
 
 <script>
-  const sentinel = document.getElementById('header-sentinel');
   const header = document.getElementById('site-header');
-  if (sentinel && header) {
-    const io = new IntersectionObserver(
-      ([entry]) => header.classList.toggle('is-compact', !entry.isIntersecting),
-      { threshold: 0, rootMargin: '-80px 0px 0px 0px' },
-    );
-    io.observe(sentinel);
+  if (header) {
+    const FADE_START = 40;
+    const FADE_END = 200;
+    let rafId: number | null = null;
+
+    const update = () => {
+      rafId = null;
+      const sy = window.scrollY;
+      const t = Math.min(1, Math.max(0, (sy - FADE_START) / (FADE_END - FADE_START)));
+      const opacity = 1 - t;
+      header.style.setProperty('--header-opacity', String(opacity));
+      header.setAttribute('aria-hidden', opacity < 0.05 ? 'true' : 'false');
+    };
+
+    const onScroll = () => {
+      if (rafId == null) rafId = requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
   }
 </script>

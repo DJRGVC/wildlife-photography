@@ -108,6 +108,15 @@ async function buildPhoto(
   } satisfies GalleryPhoto;
 }
 
+function shuffle<T>(items: readonly T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 async function loadSection(
   section: Section,
   modules: Record<string, { default: ImageMetadata }>,
@@ -115,9 +124,7 @@ async function loadSection(
   const entries = await Promise.all(
     Object.entries(modules).map(([absPath, mod]) => buildPhoto(section, absPath, mod)),
   );
-  return entries
-    .filter((x): x is GalleryPhoto => x !== null)
-    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+  return shuffle(entries.filter((x): x is GalleryPhoto => x !== null));
 }
 
 export async function loadGalleryPhotos(): Promise<{
