@@ -5,7 +5,7 @@
   --color-cream-top: #FAFAF7;
   --color-cream-deep: #F8F6F1;
   --color-cream-bottom: #E0E2D5;
-  --color-card: #DBDACE;
+  --color-card: var(--color-cream-top);
   --color-ink: #1A1A1A;
   --color-ink-soft: #4A4A4A;
   --color-ink-faint: #8A8A85;
