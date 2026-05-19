@@ -265,9 +265,8 @@ const lightboxStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: min(1120px, calc(100vw - 64px));
+    width: max-content;
     max-width: min(1120px, calc(100vw - 64px));
-    height: min-content;
     max-height: calc(100vh - 64px);
     box-shadow: 0 28px 80px -30px rgba(28, 22, 12, 0.22);
     opacity: 0;
@@ -280,16 +279,13 @@ const lightboxStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    flex: 1 1 0;
-    min-height: 0;
     transform-origin: center;
     will-change: transform, opacity;
   }
   .lb__img {
     display: block;
-    max-width: 100%;
-    max-height: 100%;
+    max-width: min(1080px, calc(100vw - 100px));
+    max-height: calc(100vh - 300px);
     width: auto;
     height: auto;
     object-fit: contain;
@@ -378,10 +374,13 @@ const lightboxStyles = `
     .lb { padding: 16px; }
     .lb__card {
       padding: 12px;
-      width: calc(100vw - 32px);
       max-width: calc(100vw - 32px);
       max-height: calc(100vh - 32px);
       border-radius: 10px;
+    }
+    .lb__img {
+      max-width: calc(100vw - 60px);
+      max-height: calc(100vh - 240px);
     }
     .lb__caption { margin-top: 14px; padding: 0 4px 4px; }
     .lb__caption .caption__title { font-size: 18px; }

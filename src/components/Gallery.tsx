@@ -213,7 +213,9 @@ export default function Gallery({ wildlife, misc }: Props) {
       blocks.push(
         <div key="sep" className="gallery__sep" role="separator" aria-hidden="true">
           <span className="gallery__sep-line" />
-          <span className="gallery__sep-dot">·</span>
+          <span className="gallery__sep-diamond gallery__sep-diamond--solid" />
+          <span className="gallery__sep-diamond gallery__sep-diamond--hollow" />
+          <span className="gallery__sep-diamond gallery__sep-diamond--solid" />
           <span className="gallery__sep-line" />
         </div>,
       );
@@ -281,21 +283,35 @@ const galleryStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 18px;
-    margin-block: 80px;
+    gap: 10px;
+    margin-block: 96px;
+    color: var(--color-ink);
     user-select: none;
   }
   .gallery__sep-line {
-    width: 56px;
+    flex: 0 0 auto;
+    width: 96px;
     height: 1px;
-    background: color-mix(in oklab, var(--color-ink) 22%, transparent);
+    background: currentColor;
+    opacity: 0.32;
   }
-  .gallery__sep-dot {
-    font-family: var(--font-serif);
-    font-size: 22px;
-    color: color-mix(in oklab, var(--color-ink) 32%, transparent);
-    line-height: 1;
-    transform: translateY(-3px);
+  .gallery__sep-diamond {
+    display: inline-block;
+    transform: rotate(45deg);
+    flex: 0 0 auto;
+  }
+  .gallery__sep-diamond--solid {
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .gallery__sep-diamond--hollow {
+    width: 11px;
+    height: 11px;
+    border: 1.2px solid currentColor;
+    opacity: 0.55;
+    margin-inline: 4px;
   }
   .gallery__item {
     display: block;
@@ -341,8 +357,9 @@ const galleryStyles = `
       margin-block: 56px;
       gap: 14px;
     }
-    .gallery__sep-line { width: 36px; }
-    .gallery__sep-dot { font-size: 18px; }
+    .gallery__sep-line { width: 56px; }
+    .gallery__sep-diamond--hollow { width: 9px; height: 9px; }
+    .gallery__sep-diamond--solid { width: 5px; height: 5px; }
     .gallery__item {
       border-radius: 4px;
     }

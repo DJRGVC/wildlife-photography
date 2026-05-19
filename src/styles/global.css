@@ -4,15 +4,15 @@
   --color-cream: #FAFAF7;
   --color-cream-top: #FAFAF7;
   --color-cream-deep: #F8F6F1;
-  --color-cream-bottom: #F0E6CF;
-  --color-card: #ECDFC0;
+  --color-cream-bottom: #DCE7EF;
+  --color-card: #EDE6D6;
   --color-ink: #1A1A1A;
   --color-ink-soft: #4A4A4A;
   --color-ink-faint: #8A8A85;
   --color-line: #E5E1D8;
 
-  --font-serif: "Bodoni 72 Book", "Bodoni 72 Oldstyle", "Bodoni 72", "Bodoni", Didot, "Hoefler Text", Georgia, ui-serif, serif;
-  --font-sans: "Bodoni 72 Book", "Bodoni 72 Oldstyle", "Bodoni 72", "Bodoni", Didot, "Hoefler Text", Georgia, ui-serif, serif;
+  --font-serif: "Newsreader", Georgia, "Hoefler Text", ui-serif, serif;
+  --font-sans: "Newsreader", Georgia, "Hoefler Text", ui-serif, serif;
 
   --container-text: 720px;
   --container-gallery: 1200px;

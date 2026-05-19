@@ -1,7 +1,9 @@
 ---
-const email = 'you@example.com';
-const linkedin = 'https://www.linkedin.com/in/your-handle/';
-const linkedinDisplay = linkedin.replace(/^https?:\/\/(www\.)?/, '');
+const emailLocal = 'dgrant';
+const emailDomain = 'berkeley.edu';
+const emailObfuscated = `${emailLocal} at ${emailDomain.replace('.', ' dot ')}`;
+const linkedin = 'https://www.linkedin.com/in/daniel-grant-a85683221/';
+const linkedinDisplay = 'linkedin.com/in/daniel-grant';
 ---
 
 <section id="contact" class="contact">
@@ -9,7 +11,13 @@ const linkedinDisplay = linkedin.replace(/^https?:\/\/(www\.)?/, '');
     <h2 class="contact__heading">Contact</h2>
     <dl class="contact__list">
       <dt>Email</dt>
-      <dd><a href={`mailto:${email}`}>{email}</a></dd>
+      <dd>
+        <a
+          href={`mailto:${emailLocal}@${emailDomain}`}
+          data-email-local={emailLocal}
+          data-email-domain={emailDomain}
+        >{emailObfuscated}</a>
+      </dd>
       <dt>LinkedIn</dt>
       <dd><a href={linkedin} rel="me noreferrer">{linkedinDisplay}</a></dd>
     </dl>
