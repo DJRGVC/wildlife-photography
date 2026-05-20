@@ -289,31 +289,58 @@ export default function Gallery({ wildlife, misc }: Props) {
       setHiddenKey(newPhoto.key);
       const prev = lbStateRef.current;
       if (!prev) return;
+      if (!node) {
+        setLbState({ ...prev, index: newIndex });
+        return;
+      }
 
-      // Center the thumb in the viewport if it's not comfortably
-      // visible. The lightbox covers the page, so an instant scroll
-      // is invisible until close. Lenis is stopped while open, so a
-      // native scrollTo lands cleanly.
-      if (node) {
-        const r0 = node.getBoundingClientRect();
-        const vh = window.innerHeight;
-        const margin = Math.max(64, r0.height / 2);
-        if (r0.top < margin || r0.bottom > vh - margin) {
-          const targetY = Math.max(
-            0,
-            window.scrollY + r0.top + r0.height / 2 - vh / 2,
-          );
-          window.scrollTo({ top: targetY, behavior: 'auto' });
+      // Center the thumb in the viewport if it isn't comfortably
+      // visible. The lightbox covers the page, so the scroll is
+      // hidden until close — but we still smooth it so the page
+      // doesn't snap underneath when the user dismisses mid-scroll.
+      // Lenis is stopped while the lightbox is open, so we pass
+      // force:true to bypass the stop and animate anyway.
+      const r0 = node.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const margin = Math.max(64, r0.height / 2);
+      let scrollDelta = 0;
+      if (r0.top < margin || r0.bottom > vh - margin) {
+        const targetY = Math.max(
+          0,
+          window.scrollY + r0.top + r0.height / 2 - vh / 2,
+        );
+        scrollDelta = targetY - window.scrollY;
+        const lenis = (
+          window as unknown as {
+            __lenis?: {
+              scrollTo?(
+                target: number,
+                opts?: { duration?: number; force?: boolean },
+              ): void;
+            };
+          }
+        ).__lenis;
+        if (lenis?.scrollTo) {
+          lenis.scrollTo(targetY, { duration: 0.35, force: true });
+        } else {
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
         }
       }
 
-      const r = node?.getBoundingClientRect();
+      // fromRect = thumb's location AFTER the smooth scroll lands.
+      // Close FLIPs to this target regardless of when the user
+      // dismisses; by the time the close animation finishes (~520ms),
+      // the page is positioned to match, so the image lands on the
+      // actual thumbnail.
       setLbState({
         ...prev,
         index: newIndex,
-        fromRect: r
-          ? { left: r.left, top: r.top, width: r.width, height: r.height }
-          : prev.fromRect,
+        fromRect: {
+          left: r0.left,
+          top: r0.top - scrollDelta,
+          width: r0.width,
+          height: r0.height,
+        },
       });
     },
     [allPhotos],

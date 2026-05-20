@@ -558,7 +558,13 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
               alt=""
               draggable={false}
               aria-hidden="true"
-              decoding="sync"
+              // async decode (not sync): on mobile, blocking paint
+              // while the cached bytes decode produces a visible
+              // hitch at the start of the crossfade. The img was just
+              // on-screen as the persistent one, so its bitmap is
+              // typically still in the decoded-image cache and paints
+              // immediately even with async.
+              decoding="async"
               style={
                 outgoing.photo.lqip
                   ? {

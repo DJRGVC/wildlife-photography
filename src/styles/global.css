@@ -138,11 +138,14 @@
   /* Width/height are set inline from expectedImageDims; the WAAPI nav
      animation morphs them during arrow-key swaps. max-* mirror the old
      .lb__img caps so an uncached photo with no inline size still
-     constrains correctly. */
+     constrains correctly. No border-radius / overflow:hidden: the
+     child <img>s have their own border-radius and never bleed past
+     the wrapper (object-fit:contain inside an absolute:inset:0 box),
+     so clipping here would just force the mobile compositor to
+     re-rasterize rounded corners every frame during the morph. */
   max-width: min(1080px, calc(100vw - 100px));
   max-height: calc(100vh - 300px);
-  border-radius: 7px;
-  overflow: hidden;
+  will-change: width, height;
 }
 .lb__img {
   position: absolute;
