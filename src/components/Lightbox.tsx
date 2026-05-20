@@ -535,18 +535,30 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
 
     const refs: HTMLImageElement[] = [];
 
-    // Current photo: full-res (medium is already loading via the
-    // <img> element). Preloading the full-res in parallel means the
-    // post-open settle-to-fullSrc swap is instant on a fast network.
-    refs.push(preloadImage(active.photos[active.index].fullSrc, undefined, 'high'));
+    // Current photo's full-res: only needed on desktop (mobile's
+    // <img> element loads fullSrc directly since useFullRes is true).
+    // Preloading in parallel means the post-open settle-to-fullSrc
+    // swap is instant on a fast network.
+    if (!IS_TOUCH_DEVICE) {
+      refs.push(
+        preloadImage(active.photos[active.index].fullSrc, undefined, 'high'),
+      );
+    }
 
-    // Neighbors: medium + fullSrc.
+    // Neighbors. Desktop wants both: medium (high priority — drives
+    // the morph) + fullSrc (low priority — picked up for the
+    // post-morph upgrade). Mobile only needs fullSrc — it never
+    // displays the medium variant.
     const preloadNeighbor = (p: LightboxPhoto): void => {
-      const mediumSrcSet = p.srcSet
-        ?.map((v) => `${v.src} ${v.width}w`)
-        .join(', ');
-      refs.push(preloadImage(p.src, mediumSrcSet, 'high'));
-      refs.push(preloadImage(p.fullSrc, undefined, 'low'));
+      if (!IS_TOUCH_DEVICE) {
+        const mediumSrcSet = p.srcSet
+          ?.map((v) => `${v.src} ${v.width}w`)
+          .join(', ');
+        refs.push(preloadImage(p.src, mediumSrcSet, 'high'));
+      }
+      refs.push(
+        preloadImage(p.fullSrc, undefined, IS_TOUCH_DEVICE ? 'high' : 'low'),
+      );
     };
 
     const photos = active.photos;
@@ -572,15 +584,17 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
   // value during a swap; the WAAPI animation immediately overrides.
   const wrapperDims = outgoing?.dims ?? renderedDims;
 
-  // Progressive loading: show the medium variant while anything is
-  // animating, swap to the full-resolution original once settled. The
-  // medium bitmap is ~half the pixels of full-res, so re-rasterizing
-  // it at the morph's changing wrapper size costs the GPU much less.
-  // 'opening' uses medium (FLIP open animation); 'open' + no outgoing
-  // uses fullSrc; during a swap (outgoing set) we drop back to
-  // medium; 'closing' keeps fullSrc so the close FLIP doesn't show
-  // a quality dip on its way to the thumbnail.
-  const useFullRes = !outgoing && phase !== 'opening';
+  // Progressive loading on desktop: show the medium variant while
+  // anything is animating, swap to the full-resolution original once
+  // settled. Mobile (touch / pointer:coarse) skips the progressive
+  // scheme entirely and stays on fullSrc throughout — the medium-to-
+  // full swap was reading as a visible quality lift on retina screens,
+  // and the user prefers consistent crispness even with the slightly
+  // heavier morph render cost. The other iOS perf knobs (shorter
+  // NAV_DURATION, lighter shadow during swap, layout containment)
+  // pick up the slack.
+  const useFullRes =
+    IS_TOUCH_DEVICE || (!outgoing && phase !== 'opening');
   const displayedSrc = useFullRes ? photo.fullSrc : photo.src;
   const displayedSrcSet = useFullRes ? undefined : srcSet;
 
