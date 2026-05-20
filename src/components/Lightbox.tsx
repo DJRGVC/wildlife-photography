@@ -72,13 +72,11 @@ function computeFlip(
   return { tx, ty, scale };
 }
 
-// How far the outgoing image slides (px) and the easing curves. Kept
-// small so navigation feels snappy — total swap is ~440ms end-to-end.
-const NAV_SLIDE_PX = 40;
-const NAV_OUT_DURATION = 200;
-const NAV_IN_DURATION = 260;
-const NAV_OUT_EASING = 'cubic-bezier(0.4, 0, 1, 1)';
-const NAV_IN_EASING = 'cubic-bezier(0, 0, 0.2, 1)';
+// Duration of an arrow-key swap. The image crossfades in place (fully
+// transparent at the midpoint) while the container resizes to the new
+// photo's aspect ratio.
+const NAV_DURATION = 440;
+const NAV_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 export default function Lightbox({ state, onClose }: Props) {
   const [active, setActive] = useState<LightboxState | null>(null);
@@ -182,14 +180,12 @@ export default function Lightbox({ state, onClose }: Props) {
     }, CLOSE_DURATION);
   }, [phase, active, onClose, navInfo]);
 
-  // Arrow-key navigation between photos. Runs as two phases:
-  //   1. Slide the current img + caption out (translateX + opacity)
-  //   2. Swap to the new photo, slide the new img + caption in from the
-  //      opposite side
-  // Phase 2 is handled by a useLayoutEffect that fires when active.index
-  // changes while navInfo is set — that way the in-animation starts
-  // synchronously in the same paint cycle as React commits the new src,
-  // so there's no flash of the new image at rest before the slide.
+  // Arrow-key navigation between photos. One continuous animation: the
+  // img's width/height interpolate from the old photo's rendered dims
+  // to the new's, and opacity follows a 1 → 0 → 1 curve with the zero
+  // crossing at the midpoint. React commits the new src at that
+  // midpoint — invisible because the image is fully transparent —
+  // while the container keeps resizing into its new aspect ratio.
   const navigate = useCallback(
     (direction: 1 | -1) => {
       if (!active || phase !== 'open' || navInfo) return;
@@ -202,62 +198,50 @@ export default function Lightbox({ state, onClose }: Props) {
 
       setNavInfo({ direction });
 
-      const slideOutPx = direction === 1 ? -NAV_SLIDE_PX : NAV_SLIDE_PX;
-      const outOpts: KeyframeAnimationOptions = {
-        duration: NAV_OUT_DURATION,
-        easing: NAV_OUT_EASING,
-        fill: 'forwards',
-      };
-      const outKeyframes: Keyframe[] = [
-        { transform: 'translateX(0)', opacity: 1 },
-        { transform: `translateX(${slideOutPx}px)`, opacity: 0 },
+      const oldDims = expectedImageDims(active.photos[active.index]);
+      const newDims = expectedImageDims(active.photos[newIndex]);
+
+      const fadeKeyframes: Keyframe[] = [
+        { opacity: 1, offset: 0 },
+        { opacity: 0, offset: 0.5 },
+        { opacity: 1, offset: 1 },
       ];
+      const fadeOpts: KeyframeAnimationOptions = {
+        duration: NAV_DURATION,
+        easing: 'linear',
+        fill: 'both',
+      };
 
-      const imgOut = img.animate(outKeyframes, outOpts);
-      caption?.animate(outKeyframes, outOpts);
+      const resizeKeyframes: Keyframe[] = [
+        { width: `${oldDims.width}px`, height: `${oldDims.height}px` },
+        { width: `${newDims.width}px`, height: `${newDims.height}px` },
+      ];
+      const resizeOpts: KeyframeAnimationOptions = {
+        duration: NAV_DURATION,
+        easing: NAV_EASING,
+        fill: 'both',
+      };
 
-      imgOut.finished
+      img.animate(fadeKeyframes, fadeOpts);
+      caption?.animate(fadeKeyframes, fadeOpts);
+      const resize = img.animate(resizeKeyframes, resizeOpts);
+
+      // Swap the photo at the midpoint, while opacity is 0. React
+      // commits the new src + inline width/height; the WAAPI resize
+      // continues to override width/height until it finishes, so
+      // there's no snap to the new size.
+      window.setTimeout(() => {
+        setActive((prev) => (prev ? { ...prev, index: newIndex } : prev));
+      }, NAV_DURATION / 2);
+
+      resize.finished
         .then(() => {
-          setActive((prev) => (prev ? { ...prev, index: newIndex } : prev));
+          setNavInfo(null);
         })
         .catch(() => {});
     },
     [active, phase, navInfo],
   );
-
-  // Phase 2 of arrow-key navigation: after the new photo commits, slide
-  // the img + caption in from the opposite side.
-  useLayoutEffect(() => {
-    if (!navInfo || !active) return;
-    const img = imgRef.current;
-    const caption = captionRef.current;
-    if (!img) return;
-
-    const slideInPx = navInfo.direction === 1 ? NAV_SLIDE_PX : -NAV_SLIDE_PX;
-    const inOpts: KeyframeAnimationOptions = {
-      duration: NAV_IN_DURATION,
-      easing: NAV_IN_EASING,
-      fill: 'both',
-    };
-    const inKeyframes: Keyframe[] = [
-      { transform: `translateX(${slideInPx}px)`, opacity: 0 },
-      { transform: 'translateX(0)', opacity: 1 },
-    ];
-
-    const imgIn = img.animate(inKeyframes, inOpts);
-    caption?.animate(inKeyframes, inOpts);
-
-    imgIn.finished
-      .then(() => {
-        setNavInfo(null);
-      })
-      .catch(() => {});
-    // active?.index in deps: this effect should fire exactly when the
-    // index changes (i.e. after navigate commits the new photo). navInfo
-    // gates whether to animate; without the index dep, the effect
-    // wouldn't re-run on swap.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active?.index]);
 
   // useLayoutEffect (not useEffect) so the WAAPI animations are applied
   // synchronously after React commits but BEFORE the browser paints — no
