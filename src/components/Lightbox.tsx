@@ -2,8 +2,15 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { createPortal } from 'react-dom';
 
 export type LightboxPhoto = {
+  // Medium variant (~1440w). Used during the open animation and the
+  // morph swap so the browser doesn't have to re-rasterize the big
+  // full-res bitmap at varying sizes every frame.
   src: string;
   srcSet?: readonly { src: string; width: number }[];
+  // Full-resolution original (~2200w). The lightbox swaps the
+  // persistent img to this once it's settled (phase === 'open' and
+  // no swap in flight).
+  fullSrc: string;
   width: number;
   height: number;
   alt: string;
@@ -492,31 +499,61 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
     };
   }, [active, close, navigate]);
 
-  // Preload the immediate neighbors so arrow / swipe swaps don't
-  // hitch on the new full-res JPEG. We do two things the browser
-  // doesn't do on its own with a bare `new Image().src = url`:
-  //   1. fetchPriority="high" — bump the request out of the default
-  //      low-priority bucket so it doesn't sit behind other resources.
-  //   2. Image.decode() — pre-decode the bytes into a bitmap so the
-  //      actual <img> element paints from frame zero when the user
-  //      navigates, rather than blocking the morph on first decode
-  //      (the actual cause of stutter on 5–10MB originals).
-  // The Image refs are retained in preloadRef so neither the request
-  // nor the decoded bitmap gets dropped before the user gets to them.
+  // Preload to support the progressive-loading scheme:
+  //   - Current photo's full-res, so the "settle to fullSrc" swap
+  //     after the open animation is instant.
+  //   - Neighbors' medium, so the morph crossfade starts from a
+  //     cached + decoded bitmap.
+  //   - Neighbors' full-res, so once the user lands on a neighbor
+  //     and the morph completes, the upgrade to fullSrc is instant.
+  //
+  // fetchPriority is high for the morph-critical assets (current's
+  // fullSrc, neighbors' medium); the neighbors' fullSrc gets low
+  // priority since we have a full NAV_DURATION to load it. decode()
+  // pre-warms the decoded-bitmap cache so the actual <img> doesn't
+  // pay decode cost on first paint.
+  //
+  // preloadRef retains references so the bitmaps aren't GC'd before
+  // the user navigates.
   useEffect(() => {
     if (!active) return;
-    const preload = (p: LightboxPhoto): HTMLImageElement => {
+    const preloadImage = (
+      src: string,
+      srcset: string | undefined,
+      priority: 'high' | 'low',
+    ): HTMLImageElement => {
       const im = new Image();
-      im.fetchPriority = 'high';
-      im.src = p.src;
+      im.fetchPriority = priority;
+      if (srcset) {
+        im.srcset = srcset;
+        im.sizes = '100vw';
+      }
+      im.src = src;
       im.decode().catch(() => {});
       return im;
     };
+
     const refs: HTMLImageElement[] = [];
+
+    // Current photo: full-res (medium is already loading via the
+    // <img> element). Preloading the full-res in parallel means the
+    // post-open settle-to-fullSrc swap is instant on a fast network.
+    refs.push(preloadImage(active.photos[active.index].fullSrc, undefined, 'high'));
+
+    // Neighbors: medium + fullSrc.
+    const preloadNeighbor = (p: LightboxPhoto): void => {
+      const mediumSrcSet = p.srcSet
+        ?.map((v) => `${v.src} ${v.width}w`)
+        .join(', ');
+      refs.push(preloadImage(p.src, mediumSrcSet, 'high'));
+      refs.push(preloadImage(p.fullSrc, undefined, 'low'));
+    };
+
     const photos = active.photos;
     const i = active.index;
-    if (i + 1 < photos.length) refs.push(preload(photos[i + 1]));
-    if (i - 1 >= 0) refs.push(preload(photos[i - 1]));
+    if (i + 1 < photos.length) preloadNeighbor(photos[i + 1]);
+    if (i - 1 >= 0) preloadNeighbor(photos[i - 1]);
+
     preloadRef.current = refs;
   }, [active]);
 
@@ -535,9 +572,17 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
   // value during a swap; the WAAPI animation immediately overrides.
   const wrapperDims = outgoing?.dims ?? renderedDims;
 
-  const outgoingSrcSet = outgoing?.photo.srcSet
-    ?.map((v) => `${v.src} ${v.width}w`)
-    .join(', ');
+  // Progressive loading: show the medium variant while anything is
+  // animating, swap to the full-resolution original once settled. The
+  // medium bitmap is ~half the pixels of full-res, so re-rasterizing
+  // it at the morph's changing wrapper size costs the GPU much less.
+  // 'opening' uses medium (FLIP open animation); 'open' + no outgoing
+  // uses fullSrc; during a swap (outgoing set) we drop back to
+  // medium; 'closing' keeps fullSrc so the close FLIP doesn't show
+  // a quality dip on its way to the thumbnail.
+  const useFullRes = !outgoing && phase !== 'opening';
+  const displayedSrc = useFullRes ? photo.fullSrc : photo.src;
+  const displayedSrcSet = useFullRes ? undefined : srcSet;
 
   return createPortal(
     <div
@@ -572,8 +617,11 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
             <img
               key="outgoing"
               className="lb__img lb__img--outgoing"
-              src={outgoing.photo.src}
-              srcSet={outgoingSrcSet}
+              // Use the full-res source: it was the persistent's src
+              // immediately before the nav started, so its decoded
+              // bitmap is in cache and there's no visible quality
+              // drop at t=0 of the crossfade.
+              src={outgoing.photo.fullSrc}
               sizes="100vw"
               alt=""
               draggable={false}
@@ -600,9 +648,9 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
             ref={imgRef}
             key="current"
             className="lb__img"
-            src={photo.src}
-            srcSet={srcSet}
-            sizes="100vw"
+            src={displayedSrc}
+            srcSet={displayedSrcSet}
+            sizes={displayedSrcSet ? '100vw' : undefined}
             width={photo.width}
             height={photo.height}
             alt={photo.alt}
