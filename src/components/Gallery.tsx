@@ -5,7 +5,7 @@ import {
   type RenderImageContext,
 } from 'react-photo-album';
 import 'react-photo-album/rows.css';
-import Lightbox, { type LightboxState } from './Lightbox';
+import Lightbox, { type LightboxPhoto, type LightboxState } from './Lightbox';
 
 export type AnimalEntry = {
   common_name: string;
@@ -141,17 +141,27 @@ function handleImgRef(node: HTMLImageElement | null): void {
   }
 }
 
+function buildLightboxPhoto(p: GalleryPhoto, showAnimal: boolean): LightboxPhoto {
+  return {
+    src: p.src,
+    srcSet: p.srcSet,
+    width: p.fullWidth,
+    height: p.fullHeight,
+    alt: altText(p),
+    captionHtml: renderCaption(p, showAnimal),
+    lqip: p.lqip,
+  };
+}
+
 function PhotoAlbumBlock({
   photos,
-  showAnimalTitle,
   globalIndexBase,
   onPick,
   hiddenKey,
 }: {
   photos: readonly GalleryPhoto[];
-  showAnimalTitle: boolean;
   globalIndexBase: number;
-  onPick: (p: GalleryPhoto, showAnimal: boolean, target: HTMLElement) => void;
+  onPick: (p: GalleryPhoto, target: HTMLElement, globalIndex: number) => void;
   hiddenKey: string | null;
 }) {
   return (
@@ -191,7 +201,7 @@ function PhotoAlbumBlock({
                 }}
                 onClick={(e) => {
                   e.preventDefault();
-                  onPick(p, showAnimalTitle, e.currentTarget);
+                  onPick(p, e.currentTarget, globalIdx);
                 }}
                 onMouseEnter={() => preloadLightboxImage(p)}
                 onFocus={() => preloadLightboxImage(p)}
@@ -226,24 +236,28 @@ export default function Gallery({ wildlife, misc }: Props) {
   const [lbState, setLbState] = useState<LightboxState | null>(null);
   const [hiddenKey, setHiddenKey] = useState<string | null>(null);
 
+  // One flat ordered list of every photo the lightbox can show, in the
+  // same order they appear visually (wildlife first, then misc). Arrow
+  // keys cycle through this list. Wildlife photos render with the
+  // species title; misc don't.
+  const lightboxPhotos = useMemo<readonly LightboxPhoto[]>(() => {
+    const list: LightboxPhoto[] = [];
+    for (const p of wildlife) list.push(buildLightboxPhoto(p, true));
+    for (const p of misc) list.push(buildLightboxPhoto(p, false));
+    return list;
+  }, [wildlife, misc]);
+
   const pick = useCallback(
-    (p: GalleryPhoto, showAnimal: boolean, sourceEl: HTMLElement) => {
+    (p: GalleryPhoto, sourceEl: HTMLElement, globalIndex: number) => {
       const r = sourceEl.getBoundingClientRect();
       setHiddenKey(p.key);
       setLbState({
-        photo: {
-          src: p.src,
-          srcSet: p.srcSet,
-          width: p.fullWidth,
-          height: p.fullHeight,
-          alt: altText(p),
-          captionHtml: renderCaption(p, showAnimal),
-          lqip: p.lqip,
-        },
+        photos: lightboxPhotos,
+        index: globalIndex,
         fromRect: { left: r.left, top: r.top, width: r.width, height: r.height },
       });
     },
-    [],
+    [lightboxPhotos],
   );
 
   const close = useCallback(() => {
@@ -258,7 +272,6 @@ export default function Gallery({ wildlife, misc }: Props) {
         <PhotoAlbumBlock
           key="wildlife"
           photos={wildlife}
-          showAnimalTitle={true}
           globalIndexBase={0}
           onPick={pick}
           hiddenKey={hiddenKey}
@@ -281,7 +294,6 @@ export default function Gallery({ wildlife, misc }: Props) {
         <PhotoAlbumBlock
           key="misc"
           photos={misc}
-          showAnimalTitle={false}
           globalIndexBase={wildlife.length}
           onPick={pick}
           hiddenKey={hiddenKey}

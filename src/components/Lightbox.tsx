@@ -12,7 +12,8 @@ export type LightboxPhoto = {
 };
 
 export type LightboxState = {
-  photo: LightboxPhoto;
+  photos: readonly LightboxPhoto[];
+  index: number;
   fromRect: { left: number; top: number; width: number; height: number };
 };
 
@@ -71,10 +72,22 @@ function computeFlip(
   return { tx, ty, scale };
 }
 
+// How far the outgoing image slides (px) and the easing curves. Kept
+// small so navigation feels snappy — total swap is ~440ms end-to-end.
+const NAV_SLIDE_PX = 40;
+const NAV_OUT_DURATION = 200;
+const NAV_IN_DURATION = 260;
+const NAV_OUT_EASING = 'cubic-bezier(0.4, 0, 1, 1)';
+const NAV_IN_EASING = 'cubic-bezier(0, 0, 0.2, 1)';
+
 export default function Lightbox({ state, onClose }: Props) {
   const [active, setActive] = useState<LightboxState | null>(null);
   const [phase, setPhase] = useState<Phase>('closed');
   const [mounted, setMounted] = useState(false);
+  // Set during an arrow-key navigation; cleared once the in-animation
+  // for the new photo finishes. Acts as a guard so spamming arrows
+  // doesn't overlap animations.
+  const [navInfo, setNavInfo] = useState<{ direction: 1 | -1 } | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const cardBgRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -99,6 +112,17 @@ export default function Lightbox({ state, onClose }: Props) {
 
   const close = useCallback(() => {
     if (phase === 'closing' || phase === 'closed' || !active) return;
+
+    // Cancel any in-flight navigation animations on the img/caption so
+    // their leftover transforms don't compose with the card's close
+    // transform (which would visually offset the image during the FLIP
+    // shrink back to the thumbnail).
+    if (navInfo) {
+      imgRef.current?.getAnimations().forEach((a) => a.cancel());
+      captionRef.current?.getAnimations().forEach((a) => a.cancel());
+      setNavInfo(null);
+    }
+
     setPhase('closing');
 
     const card = cardRef.current;
@@ -156,7 +180,84 @@ export default function Lightbox({ state, onClose }: Props) {
       setActive(null);
       onClose();
     }, CLOSE_DURATION);
-  }, [phase, active, onClose]);
+  }, [phase, active, onClose, navInfo]);
+
+  // Arrow-key navigation between photos. Runs as two phases:
+  //   1. Slide the current img + caption out (translateX + opacity)
+  //   2. Swap to the new photo, slide the new img + caption in from the
+  //      opposite side
+  // Phase 2 is handled by a useLayoutEffect that fires when active.index
+  // changes while navInfo is set — that way the in-animation starts
+  // synchronously in the same paint cycle as React commits the new src,
+  // so there's no flash of the new image at rest before the slide.
+  const navigate = useCallback(
+    (direction: 1 | -1) => {
+      if (!active || phase !== 'open' || navInfo) return;
+      const newIndex = active.index + direction;
+      if (newIndex < 0 || newIndex >= active.photos.length) return;
+
+      const img = imgRef.current;
+      const caption = captionRef.current;
+      if (!img) return;
+
+      setNavInfo({ direction });
+
+      const slideOutPx = direction === 1 ? -NAV_SLIDE_PX : NAV_SLIDE_PX;
+      const outOpts: KeyframeAnimationOptions = {
+        duration: NAV_OUT_DURATION,
+        easing: NAV_OUT_EASING,
+        fill: 'forwards',
+      };
+      const outKeyframes: Keyframe[] = [
+        { transform: 'translateX(0)', opacity: 1 },
+        { transform: `translateX(${slideOutPx}px)`, opacity: 0 },
+      ];
+
+      const imgOut = img.animate(outKeyframes, outOpts);
+      caption?.animate(outKeyframes, outOpts);
+
+      imgOut.finished
+        .then(() => {
+          setActive((prev) => (prev ? { ...prev, index: newIndex } : prev));
+        })
+        .catch(() => {});
+    },
+    [active, phase, navInfo],
+  );
+
+  // Phase 2 of arrow-key navigation: after the new photo commits, slide
+  // the img + caption in from the opposite side.
+  useLayoutEffect(() => {
+    if (!navInfo || !active) return;
+    const img = imgRef.current;
+    const caption = captionRef.current;
+    if (!img) return;
+
+    const slideInPx = navInfo.direction === 1 ? NAV_SLIDE_PX : -NAV_SLIDE_PX;
+    const inOpts: KeyframeAnimationOptions = {
+      duration: NAV_IN_DURATION,
+      easing: NAV_IN_EASING,
+      fill: 'both',
+    };
+    const inKeyframes: Keyframe[] = [
+      { transform: `translateX(${slideInPx}px)`, opacity: 0 },
+      { transform: 'translateX(0)', opacity: 1 },
+    ];
+
+    const imgIn = img.animate(inKeyframes, inOpts);
+    caption?.animate(inKeyframes, inOpts);
+
+    imgIn.finished
+      .then(() => {
+        setNavInfo(null);
+      })
+      .catch(() => {});
+    // active?.index in deps: this effect should fire exactly when the
+    // index changes (i.e. after navigate commits the new photo). navInfo
+    // gates whether to animate; without the index dep, the effect
+    // wouldn't re-run on swap.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active?.index]);
 
   // useLayoutEffect (not useEffect) so the WAAPI animations are applied
   // synchronously after React commits but BEFORE the browser paints — no
@@ -248,6 +349,13 @@ export default function Lightbox({ state, onClose }: Props) {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigate(1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigate(-1);
+      }
     };
     document.addEventListener('keydown', onKey);
 
@@ -262,11 +370,30 @@ export default function Lightbox({ state, onClose }: Props) {
       document.body.style.overflow = prevOverflow;
       lenis?.start();
     };
-  }, [active, close]);
+  }, [active, close, navigate]);
+
+  // Preload the immediate neighbors so left/right arrow swaps are
+  // instant — by the time the slide-in animation runs, the WebP for the
+  // new photo is already cached.
+  useEffect(() => {
+    if (!active) return;
+    const preload = (p: LightboxPhoto): void => {
+      const im = new Image();
+      if (p.srcSet && p.srcSet.length > 0) {
+        im.srcset = p.srcSet.map((v) => `${v.src} ${v.width}w`).join(', ');
+        im.sizes = '100vw';
+      }
+      im.src = p.src;
+    };
+    const photos = active.photos;
+    const i = active.index;
+    if (i + 1 < photos.length) preload(photos[i + 1]);
+    if (i - 1 >= 0) preload(photos[i - 1]);
+  }, [active]);
 
   if (!mounted || !active || phase === 'closed') return null;
 
-  const photo = active.photo;
+  const photo = active.photos[active.index];
   const srcSet = photo.srcSet?.map((v) => `${v.src} ${v.width}w`).join(', ');
   // Compute the exact rendered px size now, before the <img> mounts, so
   // it has real layout dimensions from frame zero — FLIP works on first
