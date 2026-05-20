@@ -143,8 +143,12 @@ function handleImgRef(node: HTMLImageElement | null): void {
 
 function buildLightboxPhoto(p: GalleryPhoto, showAnimal: boolean): LightboxPhoto {
   return {
-    src: p.src,
-    srcSet: p.srcSet,
+    // Lightbox loads the full-resolution original (not the responsive
+    // srcSet used in the gallery grid). The thumbnail in the gallery
+    // stays compressed; clicking opens the real file. `srcSet` is
+    // intentionally omitted so the browser doesn't fall back to a
+    // smaller variant on high-DPR devices.
+    src: p.fullSrc,
     width: p.fullWidth,
     height: p.fullHeight,
     alt: altText(p),

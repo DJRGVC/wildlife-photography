@@ -156,6 +156,12 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
         ?.getAnimations()
         .forEach((a) => a.cancel());
       captionRef.current?.getAnimations().forEach((a) => a.cancel());
+      // The outgoing caption is a separate node too — its 1→0 fade
+      // would otherwise stay attached as the close FLIP runs.
+      cardRef.current
+        ?.querySelector<HTMLElement>('.lb__caption--outgoing')
+        ?.getAnimations()
+        .forEach((a) => a.cancel());
       const finalDims = expectedImageDims(active.photos[active.index]);
       if (mediaRef.current) {
         mediaRef.current.style.width = `${finalDims.width}px`;
@@ -289,17 +295,10 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
         fill: 'both',
       });
 
-      // Caption fades 1→0→1 (single element, content swaps at midpoint
-      // via React) — feels right because the caption shouldn't double
-      // up. Total duration matches the image crossfade.
-      caption?.animate(
-        [
-          { opacity: 1, offset: 0 },
-          { opacity: 0, offset: 0.5 },
-          { opacity: 1, offset: 1 },
-        ],
-        { duration: NAV_DURATION, easing: 'linear', fill: 'both' },
-      );
+      // Caption animations are wired up in the useLayoutEffect below
+      // (alongside the image fades) so both the persistent and the
+      // outgoing caption element exist in the DOM by the time the
+      // animations attach.
 
       resize.finished
         .then(() => {
@@ -357,6 +356,8 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
     if (!outgoing) return;
     const newImg = imgRef.current;
     const oldImg = mediaRef.current?.querySelector<HTMLImageElement>('.lb__img--outgoing');
+    const newCap = captionRef.current;
+    const oldCap = cardRef.current?.querySelector<HTMLElement>('.lb__caption--outgoing');
     if (!newImg || !oldImg) return;
 
     const opts: KeyframeAnimationOptions = {
@@ -366,6 +367,13 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
     };
     oldImg.animate([{ opacity: 1 }, { opacity: 0 }], opts);
     newImg.animate([{ opacity: 0 }, { opacity: 1 }], opts);
+    // Captions get the same crossfade as the images — old text fades
+    // out as new fades in, both visible at half-opacity at midpoint.
+    // Replaces the previous single-element 1→0→1 sweep, which made
+    // the new caption flash to invisible and back while showing only
+    // the new text the whole time.
+    oldCap?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
+    newCap?.animate([{ opacity: 0 }, { opacity: 1 }], opts);
   }, [outgoing]);
 
   // useLayoutEffect (not useEffect) so the WAAPI animations are applied
@@ -599,11 +607,20 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
             }
           />
         </div>
-        <div
-          className="lb__caption"
-          ref={captionRef}
-          dangerouslySetInnerHTML={{ __html: photo.captionHtml }}
-        />
+        <div className="lb__caption-stack">
+          {outgoing && (
+            <div
+              className="lb__caption lb__caption--outgoing"
+              dangerouslySetInnerHTML={{ __html: outgoing.photo.captionHtml }}
+              aria-hidden="true"
+            />
+          )}
+          <div
+            className="lb__caption"
+            ref={captionRef}
+            dangerouslySetInnerHTML={{ __html: photo.captionHtml }}
+          />
+        </div>
       </div>
       <button
         type="button"

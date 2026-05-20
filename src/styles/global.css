@@ -162,10 +162,21 @@
   pointer-events: none;
 }
 
+/* Wraps both the persistent caption and the outgoing one during a
+   swap. Stack-positioned so the outgoing copy can overlay the new
+   text at the same anchor point — together they crossfade like the
+   image layers above instead of the new text flashing through zero
+   on a single element. */
+.lb__caption-stack {
+  position: relative;
+  margin-top: 18px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
 .lb__caption {
   position: relative;
   z-index: 1;
-  margin-top: 18px;
   padding: 0 8px 4px;
   text-align: center;
   color: var(--color-ink);
@@ -173,6 +184,13 @@
   max-width: 720px;
   font-family: var(--font-serif);
   opacity: 0;
+}
+.lb__caption--outgoing {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 .lb__caption .caption { display: flex; flex-direction: column; align-items: center; }
 .lb__caption .caption__title {
@@ -254,7 +272,8 @@
     max-width: calc(100vw - 60px);
     max-height: calc(100vh - 240px);
   }
-  .lb__caption { margin-top: 14px; padding: 0 4px 4px; }
+  .lb__caption-stack { margin-top: 14px; }
+  .lb__caption { padding: 0 4px 4px; }
   .lb__caption .caption__title { font-size: 18px; }
   .lb__caption .caption__sub { font-size: 13px; }
   .lb__caption .caption__scene { font-size: 13px; }
