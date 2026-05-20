@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   RowsPhotoAlbum,
   type Photo,
@@ -186,6 +186,7 @@ function PhotoAlbumBlock({
             return (
               <a
                 className="gallery__item"
+                data-photo-key={p.key}
                 href={p.fullSrc}
                 aria-label={alt}
                 aria-hidden={isHidden || undefined}
@@ -247,6 +248,18 @@ export default function Gallery({ wildlife, misc }: Props) {
     return list;
   }, [wildlife, misc]);
 
+  // Parallel ordered list of source GalleryPhotos — index here matches
+  // the index used by the Lightbox. Lets us look up the corresponding
+  // thumb's key on arrow-key navigation so we can hide it / measure it.
+  const allPhotos = useMemo<readonly GalleryPhoto[]>(
+    () => [...wildlife, ...misc],
+    [wildlife, misc],
+  );
+  // Latest lbState mirror — needed so `handleIndexChange` can read the
+  // current state without re-creating its callback on every nav.
+  const lbStateRef = useRef<LightboxState | null>(null);
+  lbStateRef.current = lbState;
+
   const pick = useCallback(
     (p: GalleryPhoto, sourceEl: HTMLElement, globalIndex: number) => {
       const r = sourceEl.getBoundingClientRect();
@@ -258,6 +271,32 @@ export default function Gallery({ wildlife, misc }: Props) {
       });
     },
     [lightboxPhotos],
+  );
+
+  // Called by Lightbox when the user arrows to a new photo. Hide the
+  // new thumb (reveals the previously-hidden one) and refresh fromRect
+  // to point at the new thumb's location — so an Esc close FLIPs back
+  // to the thumb the user is actually viewing.
+  const handleIndexChange = useCallback(
+    (newIndex: number) => {
+      const newPhoto = allPhotos[newIndex];
+      if (!newPhoto) return;
+      const node = document.querySelector<HTMLElement>(
+        `[data-photo-key="${CSS.escape(newPhoto.key)}"]`,
+      );
+      const r = node?.getBoundingClientRect();
+      setHiddenKey(newPhoto.key);
+      const prev = lbStateRef.current;
+      if (!prev) return;
+      setLbState({
+        ...prev,
+        index: newIndex,
+        fromRect: r
+          ? { left: r.left, top: r.top, width: r.width, height: r.height }
+          : prev.fromRect,
+      });
+    },
+    [allPhotos],
   );
 
   const close = useCallback(() => {
@@ -321,7 +360,7 @@ export default function Gallery({ wildlife, misc }: Props) {
         {sectionBlocks}
         <style>{galleryStyles}</style>
       </section>
-      <Lightbox state={lbState} onClose={close} />
+      <Lightbox state={lbState} onClose={close} onIndexChange={handleIndexChange} />
     </>
   );
 }

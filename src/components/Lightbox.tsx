@@ -20,6 +20,10 @@ export type LightboxState = {
 interface Props {
   state: LightboxState | null;
   onClose: () => void;
+  // Fires when the user arrows to a different photo. Gallery uses this
+  // to hide the new thumb (and reveal the old one) and to push a fresh
+  // `fromRect` for the close FLIP back through the `state` prop.
+  onIndexChange?: (newIndex: number) => void;
 }
 
 type Phase = 'closed' | 'opening' | 'open' | 'closing';
@@ -31,12 +35,12 @@ const CLOSE_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)';
 
 type Flip = { tx: number; ty: number; scale: number };
 
-// Mirrors the CSS max-width / max-height rules on .lb__img so we can
+// Mirrors the CSS max-width / max-height rules on .lb__media so we can
 // compute the rendered size from the photo's metadata alone, without
 // needing the image bytes to be loaded. That lets us set explicit pixel
-// width/height on the <img> at render time — which gives the element
-// real layout dimensions on the first frame, so FLIP works on first
-// click even for uncached images.
+// width/height on the media wrapper at render time — which gives the
+// element real layout dimensions on the first frame, so FLIP works on
+// first click even for uncached images.
 function expectedImageDims(photo: LightboxPhoto): { width: number; height: number } {
   const aspect = photo.width / photo.height;
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
@@ -72,25 +76,43 @@ function computeFlip(
   return { tx, ty, scale };
 }
 
-// Duration of an arrow-key swap. The image crossfades in place (fully
-// transparent at the midpoint) while the container resizes to the new
-// photo's aspect ratio.
+// Duration of an arrow-key swap. The media wrapper morphs from the old
+// photo's rendered dims to the new's while the outgoing image fades to
+// 0 and the incoming image fades from 0 to 1 in lockstep.
 const NAV_DURATION = 440;
 const NAV_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
-export default function Lightbox({ state, onClose }: Props) {
+// Type tag for the second <img> rendered during a swap. The outgoing
+// image stays under its original ref so getBoundingClientRect keeps
+// returning a stable rect; the incoming image is the new one.
+type SwapInfo = {
+  photo: LightboxPhoto;
+  dims: { width: number; height: number };
+};
+
+export default function Lightbox({ state, onClose, onIndexChange }: Props) {
   const [active, setActive] = useState<LightboxState | null>(null);
   const [phase, setPhase] = useState<Phase>('closed');
   const [mounted, setMounted] = useState(false);
-  // Set during an arrow-key navigation; cleared once the in-animation
-  // for the new photo finishes. Acts as a guard so spamming arrows
-  // doesn't overlap animations.
-  const [navInfo, setNavInfo] = useState<{ direction: 1 | -1 } | null>(null);
+  // The outgoing photo, rendered alongside the new one during a swap so
+  // they can truly crossfade (both visible simultaneously). Cleared
+  // when the swap animation finishes.
+  const [outgoing, setOutgoing] = useState<SwapInfo | null>(null);
+
+  // Synchronous re-entry guard for navigate(). React state (useState) is
+  // updated asynchronously, so two rapid arrow presses can both read
+  // `navInfo == null` before either setState commits and end up racing.
+  // A ref flips synchronously, so the second press in the same tick
+  // sees `true` and bails. Also tracks the latest committed index so we
+  // don't compute the next target from stale `prev` inside setState.
+  const navBusyRef = useRef(false);
+  const currentIndexRef = useRef(0);
   const cardRef = useRef<HTMLDivElement>(null);
   const cardBgRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const mediaRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => setMounted(true), []);
@@ -104,6 +126,7 @@ export default function Lightbox({ state, onClose }: Props) {
   useLayoutEffect(() => {
     if (state && !active) {
       setActive(state);
+      currentIndexRef.current = state.index;
       setPhase('opening');
     }
   }, [state, active]);
@@ -111,14 +134,24 @@ export default function Lightbox({ state, onClose }: Props) {
   const close = useCallback(() => {
     if (phase === 'closing' || phase === 'closed' || !active) return;
 
-    // Cancel any in-flight navigation animations on the img/caption so
-    // their leftover transforms don't compose with the card's close
-    // transform (which would visually offset the image during the FLIP
-    // shrink back to the thumbnail).
-    if (navInfo) {
+    // Cancel any in-flight navigation animations so their leftover
+    // transforms / sizes don't compose with the card's close transform
+    // (which would visually offset the image during the FLIP shrink
+    // back to the thumbnail). Drop the outgoing layer immediately.
+    // Also force the media wrapper to the new photo's final size so the
+    // FLIP rect computation below sees the correct dimensions, not the
+    // wrapper frozen mid-resize.
+    if (navBusyRef.current) {
+      mediaRef.current?.getAnimations().forEach((a) => a.cancel());
       imgRef.current?.getAnimations().forEach((a) => a.cancel());
       captionRef.current?.getAnimations().forEach((a) => a.cancel());
-      setNavInfo(null);
+      const finalDims = expectedImageDims(active.photos[active.index]);
+      if (mediaRef.current) {
+        mediaRef.current.style.width = `${finalDims.width}px`;
+        mediaRef.current.style.height = `${finalDims.height}px`;
+      }
+      navBusyRef.current = false;
+      setOutgoing(null);
     }
 
     setPhase('closing');
@@ -130,9 +163,15 @@ export default function Lightbox({ state, onClose }: Props) {
     const caption = captionRef.current;
     const closeBtn = closeBtnRef.current;
 
+    // Prefer the latest fromRect from the parent (state prop) — Gallery
+    // updates it whenever the user arrows to a new photo, so we FLIP
+    // back to the thumbnail of the photo actually being viewed, not the
+    // one originally clicked.
+    const fromRect = state?.fromRect ?? active.fromRect;
+
     let toTransform = 'translate(0, 0) scale(1)';
     if (card && img) {
-      const flip = computeFlip(card, img, active.fromRect);
+      const flip = computeFlip(card, img, fromRect);
       if (flip) {
         toTransform = `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`;
       }
@@ -178,70 +217,105 @@ export default function Lightbox({ state, onClose }: Props) {
       setActive(null);
       onClose();
     }, CLOSE_DURATION);
-  }, [phase, active, onClose, navInfo]);
+  }, [phase, active, onClose, state]);
 
-  // Arrow-key navigation between photos. One continuous animation: the
-  // img's width/height interpolate from the old photo's rendered dims
-  // to the new's, and opacity follows a 1 → 0 → 1 curve with the zero
-  // crossing at the midpoint. React commits the new src at that
-  // midpoint — invisible because the image is fully transparent —
-  // while the container keeps resizing into its new aspect ratio.
+  // Arrow-key navigation between photos. Both the outgoing and incoming
+  // images are rendered together inside the media wrapper; the wrapper
+  // morphs between the two aspect ratios while opacity crosses over —
+  // outgoing 1→0, incoming 0→1, in lockstep — so the cream card is
+  // never visible through both at once.
   const navigate = useCallback(
     (direction: 1 | -1) => {
-      if (!active || phase !== 'open' || navInfo) return;
-      const newIndex = active.index + direction;
+      if (!active || phase !== 'open' || navBusyRef.current) return;
+      const fromIndex = currentIndexRef.current;
+      const newIndex = fromIndex + direction;
       if (newIndex < 0 || newIndex >= active.photos.length) return;
 
+      const media = mediaRef.current;
       const img = imgRef.current;
       const caption = captionRef.current;
-      if (!img) return;
+      if (!media || !img) return;
 
-      setNavInfo({ direction });
+      navBusyRef.current = true;
+      currentIndexRef.current = newIndex;
 
-      const oldDims = expectedImageDims(active.photos[active.index]);
-      const newDims = expectedImageDims(active.photos[newIndex]);
+      // Clear any leftover animations on the same elements so their
+      // fill:both values don't compose with the new ones (would freeze
+      // the image at the previous keyframe).
+      img.getAnimations().forEach((a) => a.cancel());
+      media.getAnimations().forEach((a) => a.cancel());
+      caption?.getAnimations().forEach((a) => a.cancel());
 
-      const fadeKeyframes: Keyframe[] = [
-        { opacity: 1, offset: 0 },
-        { opacity: 0, offset: 0.5 },
-        { opacity: 1, offset: 1 },
-      ];
-      const fadeOpts: KeyframeAnimationOptions = {
-        duration: NAV_DURATION,
-        easing: 'linear',
-        fill: 'both',
-      };
+      const oldPhoto = active.photos[fromIndex];
+      const newPhoto = active.photos[newIndex];
+      const oldDims = expectedImageDims(oldPhoto);
+      const newDims = expectedImageDims(newPhoto);
 
+      // Mount the new photo immediately as the "primary" image (under
+      // imgRef) and keep the old one as the outgoing overlay. That way
+      // when the swap finishes, imgRef already points to the new image
+      // and no further DOM swap is needed.
+      setOutgoing({ photo: oldPhoto, dims: oldDims });
+      setActive((prev) => (prev ? { ...prev, index: newIndex } : prev));
+      onIndexChange?.(newIndex);
+
+      // Animations are applied after React commits the new img (the
+      // useLayoutEffect below sees navBusyRef.current === true and runs
+      // the crossfade). We start the media-wrapper resize here so it
+      // begins from the old dims even on the first frame.
       const resizeKeyframes: Keyframe[] = [
         { width: `${oldDims.width}px`, height: `${oldDims.height}px` },
         { width: `${newDims.width}px`, height: `${newDims.height}px` },
       ];
-      const resizeOpts: KeyframeAnimationOptions = {
+      const resize = media.animate(resizeKeyframes, {
         duration: NAV_DURATION,
         easing: NAV_EASING,
         fill: 'both',
-      };
+      });
 
-      img.animate(fadeKeyframes, fadeOpts);
-      caption?.animate(fadeKeyframes, fadeOpts);
-      const resize = img.animate(resizeKeyframes, resizeOpts);
-
-      // Swap the photo at the midpoint, while opacity is 0. React
-      // commits the new src + inline width/height; the WAAPI resize
-      // continues to override width/height until it finishes, so
-      // there's no snap to the new size.
-      window.setTimeout(() => {
-        setActive((prev) => (prev ? { ...prev, index: newIndex } : prev));
-      }, NAV_DURATION / 2);
+      // Caption fades 1→0→1 (single element, content swaps at midpoint
+      // via React) — feels right because the caption shouldn't double
+      // up. Total duration matches the image crossfade.
+      caption?.animate(
+        [
+          { opacity: 1, offset: 0 },
+          { opacity: 0, offset: 0.5 },
+          { opacity: 1, offset: 1 },
+        ],
+        { duration: NAV_DURATION, easing: 'linear', fill: 'both' },
+      );
 
       resize.finished
         .then(() => {
-          setNavInfo(null);
+          navBusyRef.current = false;
+          setOutgoing(null);
         })
-        .catch(() => {});
+        .catch(() => {
+          navBusyRef.current = false;
+          setOutgoing(null);
+        });
     },
-    [active, phase, navInfo],
+    [active, phase, onIndexChange],
   );
+
+  // Kick off the opacity crossfade on the two image layers once React
+  // has committed both. Runs in useLayoutEffect so the animations are
+  // attached before the next paint — no flash of the new image at full
+  // opacity before its 0→1 keyframe starts.
+  useLayoutEffect(() => {
+    if (!outgoing) return;
+    const newImg = imgRef.current;
+    const oldImg = mediaRef.current?.querySelector<HTMLImageElement>('.lb__img--outgoing');
+    if (!newImg || !oldImg) return;
+
+    const opts: KeyframeAnimationOptions = {
+      duration: NAV_DURATION,
+      easing: 'linear',
+      fill: 'both',
+    };
+    oldImg.animate([{ opacity: 1 }, { opacity: 0 }], opts);
+    newImg.animate([{ opacity: 0 }, { opacity: 1 }], opts);
+  }, [outgoing]);
 
   // useLayoutEffect (not useEffect) so the WAAPI animations are applied
   // synchronously after React commits but BEFORE the browser paints — no
@@ -249,11 +323,11 @@ export default function Lightbox({ state, onClose }: Props) {
   // FLIP transform "snaps" it back to the thumbnail.
   //
   // Animations run IMMEDIATELY — never wait for the image to load. The
-  // <img> has aspect-ratio set inline (from photo.width/height), so the
-  // browser computes its constrained rendered size before the bytes
-  // arrive. That makes getBoundingClientRect return real numbers on
-  // first click, so FLIP works on uncached images too, and the LQIP
-  // background fills the space until the WebP arrives.
+  // media wrapper has explicit px width/height, so the browser knows
+  // the final constrained size before the image bytes arrive. That
+  // makes getBoundingClientRect return real numbers on first click, so
+  // FLIP works on uncached images too, and the LQIP background fills
+  // the space until the WebP arrives.
   useLayoutEffect(() => {
     if (phase !== 'opening' || !active) return;
     const card = cardRef.current;
@@ -286,9 +360,9 @@ export default function Lightbox({ state, onClose }: Props) {
     );
 
     // Run card animations immediately — never wait for image load.
-    // The img has aspect-ratio set inline, so getBoundingClientRect
-    // returns its final constrained size from frame zero. The LQIP
-    // background shows in the space until the WebP arrives.
+    // The media wrapper has explicit px dims, so it has real layout
+    // size from frame zero. The LQIP background on the img shows in
+    // that space until the WebP arrives.
     const flip = computeFlip(card, img, active.fromRect);
     const cardFromTransform = flip
       ? `translate(${flip.tx.toFixed(2)}px, ${flip.ty.toFixed(2)}px) scale(${flip.scale.toFixed(4)})`
@@ -357,8 +431,8 @@ export default function Lightbox({ state, onClose }: Props) {
   }, [active, close, navigate]);
 
   // Preload the immediate neighbors so left/right arrow swaps are
-  // instant — by the time the slide-in animation runs, the WebP for the
-  // new photo is already cached.
+  // instant — by the time the crossfade runs, the WebP for the new
+  // photo is already cached.
   useEffect(() => {
     if (!active) return;
     const preload = (p: LightboxPhoto): void => {
@@ -379,11 +453,20 @@ export default function Lightbox({ state, onClose }: Props) {
 
   const photo = active.photos[active.index];
   const srcSet = photo.srcSet?.map((v) => `${v.src} ${v.width}w`).join(', ');
-  // Compute the exact rendered px size now, before the <img> mounts, so
-  // it has real layout dimensions from frame zero — FLIP works on first
-  // click for uncached images. When the WebP arrives, object-fit:
-  // contain keeps it sized identically, no reflow.
+  // Compute the exact rendered px size now, before the media wrapper
+  // mounts, so it has real layout dimensions from frame zero — FLIP
+  // works on first click for uncached images.
   const renderedDims = expectedImageDims(photo);
+
+  // During a swap the wrapper's size is driven by the WAAPI resize
+  // animation, but we still set a sensible initial inline size so the
+  // first paint isn't 0×0. We use the *outgoing* dims as the starting
+  // value during a swap; the WAAPI animation immediately overrides.
+  const wrapperDims = outgoing?.dims ?? renderedDims;
+
+  const outgoingSrcSet = outgoing?.photo.srcSet
+    ?.map((v) => `${v.src} ${v.width}w`)
+    .join(', ');
 
   return createPortal(
     <div
@@ -400,9 +483,39 @@ export default function Lightbox({ state, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="lb__card-bg" ref={cardBgRef} aria-hidden="true" />
-        <div className="lb__media">
+        <div
+          className="lb__media"
+          ref={mediaRef}
+          style={{
+            width: `${wrapperDims.width}px`,
+            height: `${wrapperDims.height}px`,
+          }}
+        >
+          {outgoing && (
+            <img
+              key="outgoing"
+              className="lb__img lb__img--outgoing"
+              src={outgoing.photo.src}
+              srcSet={outgoingSrcSet}
+              sizes="100vw"
+              alt=""
+              draggable={false}
+              aria-hidden="true"
+              decoding="sync"
+              style={
+                outgoing.photo.lqip
+                  ? {
+                      backgroundImage: `url(${outgoing.photo.lqip})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }
+                  : undefined
+              }
+            />
+          )}
           <img
             ref={imgRef}
+            key="current"
             className="lb__img"
             src={photo.src}
             srcSet={srcSet}
@@ -412,27 +525,15 @@ export default function Lightbox({ state, onClose }: Props) {
             alt={photo.alt}
             draggable={false}
             fetchPriority="high"
-            style={{
-              // Explicit pixel size overrides .lb__img's width:auto/
-              // height:auto, forcing the browser to reserve layout space
-              // even before the image bytes are decoded. Without this,
-              // an uncached <img> renders 0×0 (aspect-ratio alone isn't
-              // enough when both axes are auto and there's no intrinsic
-              // size), so getBoundingClientRect returns 0 inside the
-              // FLIP useLayoutEffect and the animation falls back to a
-              // center scale instead of starting at the thumb. Once the
-              // WebP loads, object-fit: contain keeps it sized exactly
-              // to this box — no reflow, no animation glitch.
-              width: `${renderedDims.width}px`,
-              height: `${renderedDims.height}px`,
-              ...(photo.lqip
+            style={
+              photo.lqip
                 ? {
                     backgroundImage: `url(${photo.lqip})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }
-                : {}),
-            }}
+                : undefined
+            }
           />
         </div>
         <div
