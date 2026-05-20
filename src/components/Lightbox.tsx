@@ -117,6 +117,10 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
   // Start position + timestamp of the active single-finger touch.
   // Cleared on touchend/touchcancel or when a second finger lands.
   const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  // Holds the Image objects used to preload neighbors. Keeping a strong
+  // reference until the next nav prevents the browser from dropping
+  // the decoded bitmap before the user actually arrows to it.
+  const preloadRef = useRef<HTMLImageElement[]>([]);
 
   useEffect(() => setMounted(true), []);
 
@@ -480,23 +484,32 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
     };
   }, [active, close, navigate]);
 
-  // Preload the immediate neighbors so left/right arrow swaps are
-  // instant — by the time the crossfade runs, the WebP for the new
-  // photo is already cached.
+  // Preload the immediate neighbors so arrow / swipe swaps don't
+  // hitch on the new full-res JPEG. We do two things the browser
+  // doesn't do on its own with a bare `new Image().src = url`:
+  //   1. fetchPriority="high" — bump the request out of the default
+  //      low-priority bucket so it doesn't sit behind other resources.
+  //   2. Image.decode() — pre-decode the bytes into a bitmap so the
+  //      actual <img> element paints from frame zero when the user
+  //      navigates, rather than blocking the morph on first decode
+  //      (the actual cause of stutter on 5–10MB originals).
+  // The Image refs are retained in preloadRef so neither the request
+  // nor the decoded bitmap gets dropped before the user gets to them.
   useEffect(() => {
     if (!active) return;
-    const preload = (p: LightboxPhoto): void => {
+    const preload = (p: LightboxPhoto): HTMLImageElement => {
       const im = new Image();
-      if (p.srcSet && p.srcSet.length > 0) {
-        im.srcset = p.srcSet.map((v) => `${v.src} ${v.width}w`).join(', ');
-        im.sizes = '100vw';
-      }
+      im.fetchPriority = 'high';
       im.src = p.src;
+      im.decode().catch(() => {});
+      return im;
     };
+    const refs: HTMLImageElement[] = [];
     const photos = active.photos;
     const i = active.index;
-    if (i + 1 < photos.length) preload(photos[i + 1]);
-    if (i - 1 >= 0) preload(photos[i - 1]);
+    if (i + 1 < photos.length) refs.push(preload(photos[i + 1]));
+    if (i - 1 >= 0) refs.push(preload(photos[i - 1]));
+    preloadRef.current = refs;
   }, [active]);
 
   if (!mounted || !active || phase === 'closed') return null;
