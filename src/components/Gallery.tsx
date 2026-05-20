@@ -107,23 +107,35 @@ function handleImgLoad(e: React.SyntheticEvent<HTMLImageElement>): void {
 const preloadedSrcs = new Set<string>();
 
 /**
- * On hover, kick off a background fetch of the lightbox-sized variant of
- * this photo. By the time the user clicks, the image is in the browser
- * cache → the lightbox opens with zero load delay.
+ * On hover / focus / touchstart, kick off a background fetch of both
+ * lightbox-sized variants of this photo. By the time the user clicks,
+ * the bytes are in the browser cache → the lightbox opens with no
+ * decode-time LQIP flash.
  *
- * Matches the lightbox's own srcset + sizes so the browser picks the
- * same variant for both. Cheap if the user just glances past — browser
- * queues, then drops the request once they leave the page.
+ * - Medium variant: desktop's progressive open animation shows this.
+ *   Use srcset/sizes so the browser picks the same variant the
+ *   lightbox will.
+ * - Full-resolution: mobile shows this directly (no progressive); also
+ *   what desktop settles to after the open animation. Pre-decode so
+ *   the <img> doesn't pay decode cost on first paint.
  */
 function preloadLightboxImage(p: GalleryPhoto): void {
-  if (preloadedSrcs.has(p.src)) return;
-  preloadedSrcs.add(p.src);
-  const img = new Image();
-  if (p.srcSet && p.srcSet.length > 0) {
-    img.srcset = p.srcSet.map((v) => `${v.src} ${v.width}w`).join(', ');
-    img.sizes = '100vw';
+  if (!preloadedSrcs.has(p.src)) {
+    preloadedSrcs.add(p.src);
+    const img = new Image();
+    if (p.srcSet && p.srcSet.length > 0) {
+      img.srcset = p.srcSet.map((v) => `${v.src} ${v.width}w`).join(', ');
+      img.sizes = '100vw';
+    }
+    img.src = p.src;
   }
-  img.src = p.src;
+  if (!preloadedSrcs.has(p.fullSrc)) {
+    preloadedSrcs.add(p.fullSrc);
+    const img = new Image();
+    img.fetchPriority = 'high';
+    img.src = p.fullSrc;
+    img.decode().catch(() => {});
+  }
 }
 
 /**
@@ -213,6 +225,14 @@ function PhotoAlbumBlock({
                 }}
                 onMouseEnter={() => preloadLightboxImage(p)}
                 onFocus={() => preloadLightboxImage(p)}
+                // Mobile equivalent of hover-preload: kick off the
+                // fullSrc fetch + decode as soon as the finger lands,
+                // so the lightbox's <img> finds bytes ready by the
+                // time the tap completes and React mounts the
+                // portal. Without this, mobile's first open shows
+                // the LQIP backdrop for ~100ms while the new full-
+                // res JPEG decodes.
+                onTouchStart={() => preloadLightboxImage(p)}
                 onMouseMove={handleTilt}
                 onMouseLeave={resetTilt}
               >
