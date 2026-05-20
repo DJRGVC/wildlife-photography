@@ -259,6 +259,9 @@ export default function Gallery({ wildlife, misc }: Props) {
   // current state without re-creating its callback on every nav.
   const lbStateRef = useRef<LightboxState | null>(null);
   lbStateRef.current = lbState;
+  // RAF id of the in-flight smooth-scroll, so a fast second nav can
+  // cancel the previous animation before starting a new one.
+  const scrollRafRef = useRef<number | null>(null);
 
   const pick = useCallback(
     (p: GalleryPhoto, sourceEl: HTMLElement, globalIndex: number) => {
@@ -298,8 +301,13 @@ export default function Gallery({ wildlife, misc }: Props) {
       // visible. The lightbox covers the page, so the scroll is
       // hidden until close — but we still smooth it so the page
       // doesn't snap underneath when the user dismisses mid-scroll.
-      // Lenis is stopped while the lightbox is open, so we pass
-      // force:true to bypass the stop and animate anyway.
+      //
+      // We drive the smooth motion ourselves with rAF rather than
+      // Lenis's scrollTo: Lenis is `stop()`ed while the lightbox is
+      // open, and `force: true` proved unreliable for actually
+      // moving the wrapper in that state. window.scrollTo() works
+      // through Lenis's stopped state (verified by the previous
+      // instant version), so each frame just sets a new position.
       const r0 = node.getBoundingClientRect();
       const vh = window.innerHeight;
       const margin = Math.max(64, r0.height / 2);
@@ -310,21 +318,24 @@ export default function Gallery({ wildlife, misc }: Props) {
           window.scrollY + r0.top + r0.height / 2 - vh / 2,
         );
         scrollDelta = targetY - window.scrollY;
-        const lenis = (
-          window as unknown as {
-            __lenis?: {
-              scrollTo?(
-                target: number,
-                opts?: { duration?: number; force?: boolean },
-              ): void;
-            };
-          }
-        ).__lenis;
-        if (lenis?.scrollTo) {
-          lenis.scrollTo(targetY, { duration: 0.35, force: true });
-        } else {
-          window.scrollTo({ top: targetY, behavior: 'smooth' });
+
+        if (scrollRafRef.current !== null) {
+          cancelAnimationFrame(scrollRafRef.current);
         }
+        const startY = window.scrollY;
+        const startTime = performance.now();
+        const dur = 350;
+        const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+        const step = (now: number) => {
+          const t = Math.min(1, (now - startTime) / dur);
+          window.scrollTo(0, startY + scrollDelta * easeOutCubic(t));
+          if (t < 1) {
+            scrollRafRef.current = requestAnimationFrame(step);
+          } else {
+            scrollRafRef.current = null;
+          }
+        };
+        scrollRafRef.current = requestAnimationFrame(step);
       }
 
       // fromRect = thumb's location AFTER the smooth scroll lands.
