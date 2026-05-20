@@ -274,9 +274,11 @@ export default function Gallery({ wildlife, misc }: Props) {
   );
 
   // Called by Lightbox when the user arrows to a new photo. Hide the
-  // new thumb (reveals the previously-hidden one) and refresh fromRect
-  // to point at the new thumb's location — so an Esc close FLIPs back
-  // to the thumb the user is actually viewing.
+  // new thumb (reveals the previously-hidden one), bring it into view
+  // if it's scrolled off-screen, and refresh fromRect to its current
+  // location — so an Esc close FLIPs back to the thumb the user is
+  // actually viewing, and so the page is positioned at it when the
+  // lightbox dismisses.
   const handleIndexChange = useCallback(
     (newIndex: number) => {
       const newPhoto = allPhotos[newIndex];
@@ -284,10 +286,28 @@ export default function Gallery({ wildlife, misc }: Props) {
       const node = document.querySelector<HTMLElement>(
         `[data-photo-key="${CSS.escape(newPhoto.key)}"]`,
       );
-      const r = node?.getBoundingClientRect();
       setHiddenKey(newPhoto.key);
       const prev = lbStateRef.current;
       if (!prev) return;
+
+      // Center the thumb in the viewport if it's not comfortably
+      // visible. The lightbox covers the page, so an instant scroll
+      // is invisible until close. Lenis is stopped while open, so a
+      // native scrollTo lands cleanly.
+      if (node) {
+        const r0 = node.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const margin = Math.max(64, r0.height / 2);
+        if (r0.top < margin || r0.bottom > vh - margin) {
+          const targetY = Math.max(
+            0,
+            window.scrollY + r0.top + r0.height / 2 - vh / 2,
+          );
+          window.scrollTo({ top: targetY, behavior: 'auto' });
+        }
+      }
+
+      const r = node?.getBoundingClientRect();
       setLbState({
         ...prev,
         index: newIndex,

@@ -114,6 +114,9 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const mediaRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  // Start position + timestamp of the active single-finger touch.
+  // Cleared on touchend/touchcancel or when a second finger lands.
+  const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -311,6 +314,41 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
     [active, phase, onIndexChange],
   );
 
+  // Touch swipe navigation for mobile. Mirrors the arrow-key behaviour:
+  // swipe-left → next photo, swipe-right → previous. We track a single
+  // finger; multi-touch (pinch, two-finger swipe) cancels tracking so
+  // we don't navigate on accidental gestures. The threshold/duration
+  // are tuned to feel snappy without firing on slow vertical pans.
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 1) {
+      touchStartRef.current = null;
+      return;
+    }
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  }, []);
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const start = touchStartRef.current;
+      touchStartRef.current = null;
+      if (!start || e.changedTouches.length !== 1) return;
+      const end = e.changedTouches[0];
+      const dx = end.clientX - start.x;
+      const dy = end.clientY - start.y;
+      const dt = Date.now() - start.t;
+      if (Math.abs(dx) < 50) return;
+      if (Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      if (dt > 600) return;
+      navigate(dx < 0 ? 1 : -1);
+    },
+    [navigate],
+  );
+
+  const onTouchCancel = useCallback(() => {
+    touchStartRef.current = null;
+  }, []);
+
   // Kick off the opacity crossfade on the two image layers once React
   // has committed both. Runs in useLayoutEffect so the animations are
   // attached before the next paint — no flash of the new image at full
@@ -488,6 +526,12 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
       aria-modal="true"
       aria-label={photo.alt}
       onClick={close}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchCancel}
+      // Disable browser-native swipe gestures (back-swipe, pinch-zoom)
+      // so they don't compete with our horizontal swipe nav.
+      style={{ touchAction: 'none' }}
     >
       <div className="lb__bg" ref={bgRef} aria-hidden="true" />
       <div
