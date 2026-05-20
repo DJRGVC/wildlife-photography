@@ -131,6 +131,15 @@
   opacity: 0;
   will-change: opacity;
 }
+/* While a swap is in flight, the card resizes every frame and the
+   80px-blur shadow above re-rasterizes alongside it — the single
+   biggest source of stutter on iOS. Shrink the blur (and drop the
+   spread) for the brief swap window; the change is too quick to
+   read as a shadow pop. Selector matches a card whose media subtree
+   contains an outgoing img, which is true exactly during a swap. */
+.lb__card:has(.lb__img--outgoing) .lb__card-bg {
+  box-shadow: 0 14px 28px -8px rgba(28, 22, 12, 0.18);
+}
 
 .lb__media {
   position: relative;
@@ -146,6 +155,10 @@
   max-width: min(1080px, calc(100vw - 100px));
   max-height: calc(100vh - 300px);
   will-change: width, height;
+  /* Scope layout/style work to the wrapper's subtree so iOS doesn't
+     have to consider the rest of the lightbox tree each frame of the
+     width/height morph. */
+  contain: layout style;
 }
 .lb__img {
   position: absolute;
@@ -156,6 +169,10 @@
   object-fit: contain;
   border-radius: 7px;
   user-select: none;
+  /* Compositing hint for the opacity crossfade — promotes each image
+     to its own layer so the GPU can blend them without the painter
+     touching pixels of unaffected siblings. */
+  will-change: opacity;
 }
 .lb__img--outgoing {
   z-index: 1;
