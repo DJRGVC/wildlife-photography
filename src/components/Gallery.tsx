@@ -324,7 +324,7 @@ export default function Gallery({ wildlife, misc }: Props) {
         }
         const startY = window.scrollY;
         const startTime = performance.now();
-        const dur = 350;
+        const dur = 460;
         const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
         const step = (now: number) => {
           const t = Math.min(1, (now - startTime) / dur);
