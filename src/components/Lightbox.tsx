@@ -144,6 +144,14 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
     if (navBusyRef.current) {
       mediaRef.current?.getAnimations().forEach((a) => a.cancel());
       imgRef.current?.getAnimations().forEach((a) => a.cancel());
+      // The outgoing img is a separate DOM node — its 1→0 opacity
+      // animation lives on that element, not on imgRef. Without
+      // cancelling it, the orphaned animation would keep holding the
+      // element at low opacity during the close FLIP.
+      mediaRef.current
+        ?.querySelector<HTMLImageElement>('.lb__img--outgoing')
+        ?.getAnimations()
+        .forEach((a) => a.cancel());
       captionRef.current?.getAnimations().forEach((a) => a.cancel());
       const finalDims = expectedImageDims(active.photos[active.index]);
       if (mediaRef.current) {
@@ -199,7 +207,12 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
       opts,
     );
     closeBtn?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 220 });
-    caption?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 240 });
+    // Single-keyframe form: WAAPI interpolates from the element's
+    // current computed opacity to 0. Important when closing mid-nav,
+    // where the caption's 1→0→1 nav animation may have it at any
+    // intermediate value — a leading {opacity:1} keyframe would snap
+    // back to fully visible before fading, producing a visible flash.
+    caption?.animate([{ opacity: 0 }], { ...opts, duration: 240 });
     cardBg?.animate([{ opacity: 1 }, { opacity: 0 }], {
       ...opts,
       duration: CLOSE_DURATION * 0.85,
