@@ -78,16 +78,8 @@ function computeFlip(
 
 // Duration of an arrow-key swap. The media wrapper morphs from the old
 // photo's rendered dims to the new's while the outgoing image fades to
-// 0 and the incoming image fades from 0 to 1 in lockstep. We shorten
-// the morph on touch devices — iOS Safari's renderer struggles with
-// the combined cost of width/height layout, the card's big box-shadow
-// re-rasterizing every frame, and several simultaneous WAAPI fades.
-// A shorter window hides the per-frame cost behind motion blur.
-const IS_TOUCH_DEVICE =
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(pointer: coarse)').matches;
-const NAV_DURATION = IS_TOUCH_DEVICE ? 320 : 440;
+// 0 and the incoming image fades from 0 to 1 in lockstep.
+const NAV_DURATION = 440;
 const NAV_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 // Type tag for the second <img> rendered during a swap. The outgoing
