@@ -30,6 +30,29 @@ const CLOSE_EASING = 'cubic-bezier(0.4, 0.0, 0.2, 1)';
 
 type Flip = { tx: number; ty: number; scale: number };
 
+// Mirrors the CSS max-width / max-height rules on .lb__img so we can
+// compute the rendered size from the photo's metadata alone, without
+// needing the image bytes to be loaded. That lets us set explicit pixel
+// width/height on the <img> at render time — which gives the element
+// real layout dimensions on the first frame, so FLIP works on first
+// click even for uncached images.
+function expectedImageDims(photo: LightboxPhoto): { width: number; height: number } {
+  const aspect = photo.width / photo.height;
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const isMobile = vw < 640;
+  const maxWidth = isMobile ? vw - 60 : Math.min(1080, vw - 100);
+  const maxHeight = isMobile ? vh - 240 : vh - 300;
+
+  let width = Math.min(maxWidth, photo.width);
+  let height = width / aspect;
+  if (height > maxHeight) {
+    height = maxHeight;
+    width = height * aspect;
+  }
+  return { width, height };
+}
+
 function computeFlip(
   cardEl: HTMLElement,
   imgEl: HTMLElement,
@@ -245,6 +268,11 @@ export default function Lightbox({ state, onClose }: Props) {
 
   const photo = active.photo;
   const srcSet = photo.srcSet?.map((v) => `${v.src} ${v.width}w`).join(', ');
+  // Compute the exact rendered px size now, before the <img> mounts, so
+  // it has real layout dimensions from frame zero — FLIP works on first
+  // click for uncached images. When the WebP arrives, object-fit:
+  // contain keeps it sized identically, no reflow.
+  const renderedDims = expectedImageDims(photo);
 
   return createPortal(
     <div
@@ -274,17 +302,18 @@ export default function Lightbox({ state, onClose }: Props) {
             draggable={false}
             fetchPriority="high"
             style={{
-              // Setting aspect-ratio explicitly (in addition to width/
-              // height attrs) is the most reliable way to get the browser
-              // — Firefox in particular — to compute the constrained
-              // rendered size from CSS max-width/max-height BEFORE the
-              // image data is loaded. Without this, getBoundingClientRect
-              // returns 0 on first click for uncached images, which
-              // breaks the FLIP scale calculation.
-              aspectRatio:
-                photo.width && photo.height
-                  ? `${photo.width} / ${photo.height}`
-                  : undefined,
+              // Explicit pixel size overrides .lb__img's width:auto/
+              // height:auto, forcing the browser to reserve layout space
+              // even before the image bytes are decoded. Without this,
+              // an uncached <img> renders 0×0 (aspect-ratio alone isn't
+              // enough when both axes are auto and there's no intrinsic
+              // size), so getBoundingClientRect returns 0 inside the
+              // FLIP useLayoutEffect and the animation falls back to a
+              // center scale instead of starting at the thumb. Once the
+              // WebP loads, object-fit: contain keeps it sized exactly
+              // to this box — no reflow, no animation glitch.
+              width: `${renderedDims.width}px`,
+              height: `${renderedDims.height}px`,
               ...(photo.lqip
                 ? {
                     backgroundImage: `url(${photo.lqip})`,
