@@ -1,5 +1,7 @@
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 import imageData from '../image-data.json';
 
 export const SECTIONS = ['wildlife', 'misc'] as const;
@@ -52,6 +54,12 @@ const MISC_MODULES = import.meta.glob<{ default: ImageMetadata }>(
 const VARIANT_WIDTHS = [720, 1440] as const;
 const FULL_MAX_WIDTH = 2200;
 const FORMAT = 'webp' as const;
+// Cloudflare Pages enforces a 25 MiB per-asset upload limit. We serve
+// the byte-for-byte original as fullSrc when it fits comfortably under
+// that ceiling so the lightbox is genuinely lossless; for anything
+// larger we fall back to the Astro-processed WebP variant (which
+// strip-originals.mjs leaves alone for the same reason).
+const CF_MAX_BYTES = 24 * 1024 * 1024;
 
 function readMeta(key: string): PhotoMeta | null {
   const map = imageData as unknown as Record<string, PhotoMeta>;
@@ -78,23 +86,46 @@ async function buildPhoto(
     widths.map((w) => getImage({ src: mod.default, width: w, format: FORMAT })),
   );
 
-  const fullWidth = Math.min(FULL_MAX_WIDTH, mod.default.width);
-  const full = await getImage({ src: mod.default, width: fullWidth, format: FORMAT });
-  const fullHeightAttr = Number(full.attributes.height);
-  const fullHeight =
-    Number.isFinite(fullHeightAttr) && fullHeightAttr > 0
-      ? fullHeightAttr
-      : Math.round((fullWidth * mod.default.height) / mod.default.width);
+  // fullSrc: byte-for-byte original when it fits under Cloudflare's
+  // per-asset limit, else an Astro-processed WebP fallback. The
+  // original URL (`mod.default.src`) is unprocessed — Astro just
+  // copies the file into dist/_astro/ with a content-hashed name, so
+  // the bytes are identical to the source JPEG.
+  let fullSrc: string;
+  let fullWidth: number;
+  let fullHeight: number;
+  let originalSize = 0;
+  try {
+    const fsPath = path.resolve(process.cwd(), absPath.replace(/^\//, ''));
+    originalSize = (await fs.stat(fsPath)).size;
+  } catch {
+    // unreadable — fall through to webp fallback
+  }
+  if (originalSize > 0 && originalSize <= CF_MAX_BYTES) {
+    fullSrc = mod.default.src;
+    fullWidth = mod.default.width;
+    fullHeight = mod.default.height;
+  } else {
+    const capped = Math.min(FULL_MAX_WIDTH, mod.default.width);
+    const fallback = await getImage({ src: mod.default, width: capped, format: FORMAT });
+    fullSrc = fallback.src;
+    fullWidth = capped;
+    const h = Number(fallback.attributes.height);
+    fullHeight = Number.isFinite(h) && h > 0
+      ? h
+      : Math.round((capped * mod.default.height) / mod.default.width);
+  }
 
-  const main = variants[variants.length - 1] ?? full;
-  const mainWidth = Number(main.attributes.width) || mod.default.width;
-  const mainHeight = Number(main.attributes.height) || mod.default.height;
+  const main = variants[variants.length - 1];
+  const mainSrc = main?.src ?? fullSrc;
+  const mainWidth = Number(main?.attributes.width) || mod.default.width;
+  const mainHeight = Number(main?.attributes.height) || mod.default.height;
 
   return {
     ...meta,
     key,
     fileName,
-    src: main.src,
+    src: mainSrc,
     width: mainWidth,
     height: mainHeight,
     srcSet: variants.map((v) => ({
@@ -102,7 +133,7 @@ async function buildPhoto(
       width: Number(v.attributes.width) || mod.default.width,
       height: Number(v.attributes.height) || mod.default.height,
     })),
-    fullSrc: full.src,
+    fullSrc,
     fullWidth,
     fullHeight,
   } satisfies GalleryPhoto;

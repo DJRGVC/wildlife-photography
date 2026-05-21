@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Strip original JPG/JPEG files from dist/_astro/ before deploying to
-// Cloudflare Workers (which has a 25 MiB per-asset limit). Astro emits the
-// originals into the bundle because import.meta.glob references them, but
-// the gallery only ever serves the WebP variants getImage() produces — so
-// the originals are dead weight.
+// Strip original JPG/JPEG files from dist/_astro/ that exceed
+// Cloudflare Pages' 25 MiB per-asset upload limit. Files at or under
+// the limit are kept — the lightbox serves them as fullSrc for
+// genuinely lossless full-res viewing (see src/lib/photos.ts). Files
+// over the limit are dropped here; src/lib/photos.ts has matching
+// logic that falls those photos back to the WebP variant.
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,9 +12,12 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const ASTRO_DIR = path.join(ROOT, 'dist', '_astro');
+const CF_MAX_BYTES = 24 * 1024 * 1024;
 
 let removed = 0;
-let totalBytes = 0;
+let kept = 0;
+let removedBytes = 0;
+let keptBytes = 0;
 
 async function walk(dir) {
   let entries;
@@ -29,9 +33,14 @@ async function walk(dir) {
       await walk(p);
     } else if (/\.(jpe?g)$/i.test(e.name)) {
       const stat = await fs.stat(p);
-      await fs.unlink(p);
-      removed++;
-      totalBytes += stat.size;
+      if (stat.size > CF_MAX_BYTES) {
+        await fs.unlink(p);
+        removed++;
+        removedBytes += stat.size;
+      } else {
+        kept++;
+        keptBytes += stat.size;
+      }
     }
   }
 }
@@ -44,5 +53,9 @@ try {
 }
 
 await walk(ASTRO_DIR);
-const mb = (totalBytes / 1024 / 1024).toFixed(1);
-console.log(`[strip-originals] removed ${removed} JPG file(s) (${mb} MiB) from dist/_astro/`);
+const keptMb = (keptBytes / 1024 / 1024).toFixed(1);
+const removedMb = (removedBytes / 1024 / 1024).toFixed(1);
+console.log(
+  `[strip-originals] kept ${kept} original JPG file(s) (${keptMb} MiB) for lossless lightbox; ` +
+    `stripped ${removed} that exceeded the ${CF_MAX_BYTES / 1024 / 1024} MiB Cloudflare limit (${removedMb} MiB).`,
+);
