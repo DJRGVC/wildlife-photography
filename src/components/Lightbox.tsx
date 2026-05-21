@@ -399,6 +399,16 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
       touchStartRef.current = null;
       return;
     }
+    // Don't track for swipe-nav while the viewport is pinch-zoomed —
+    // the user is panning the zoomed image, not requesting nav.
+    if (
+      typeof window !== 'undefined' &&
+      window.visualViewport &&
+      window.visualViewport.scale > 1.01
+    ) {
+      touchStartRef.current = null;
+      return;
+    }
     const t = e.touches[0];
     touchStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
   }, []);
@@ -442,11 +452,11 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
     };
     oldImg.animate([{ opacity: 1 }, { opacity: 0 }], opts);
     newImg.animate([{ opacity: 0 }, { opacity: 1 }], opts);
-    // Caption text swaps immediately (React already committed the new
-    // content for this render). We just lift it from 50% to 100%
-    // opacity over the swap so the new text gently settles in rather
-    // than appearing at full intensity from frame zero.
-    newCap?.animate([{ opacity: 0.5 }, { opacity: 1 }], opts);
+    // Caption text swaps instantly (React already committed it) —
+    // no opacity animation. Previously a 0.5 → 1 fade was running
+    // here too; removing it drops one concurrent WAAPI animation
+    // per swap with no perceptible visual difference (the eye is
+    // tracking the morphing image, not text).
   }, [outgoing]);
 
   // useLayoutEffect (not useEffect) so the WAAPI animations are applied
@@ -469,6 +479,13 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
     const caption = captionRef.current;
     const closeBtn = closeBtnRef.current;
     if (!card || !img || !bg) return;
+
+    // Same body-class signal used by close — it suppresses the
+    // site-header's backdrop-filter + mask-image and pauses cursor
+    // pixel sampling during the open animation too. Header sits at
+    // z-index 50 behind the lightbox; its backdrop-filter recomputes
+    // every frame as .lb__bg's opacity animates 0 → 1.
+    document.body.classList.add('lb-animating');
 
     // Fade the backdrop immediately so something happens on click even
     // if the card is waiting for the image to load. The blur radius
@@ -532,7 +549,13 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
       { duration: 320, delay: 320, easing: 'ease-out', fill: 'both' },
     );
 
-    cardAnim.finished.then(() => setPhase('open')).catch(() => {});
+    const finishOpen = () => {
+      document.body.classList.remove('lb-animating');
+      setPhase('open');
+    };
+    cardAnim.finished.then(finishOpen).catch(() => {
+      document.body.classList.remove('lb-animating');
+    });
   }, [phase, active]);
 
   // Latest close/navigate handlers held in refs so the open/close
@@ -753,6 +776,16 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
             draggable={false}
             fetchPriority="high"
             decoding="async"
+            // Once the real image has loaded, clear the LQIP background
+            // — keeping it set composites a data-URL image behind the
+            // letterbox pixels every frame the layer repaints, for
+            // zero benefit (the JPEG fully covers it via object-fit).
+            onLoad={(e) => {
+              const el = e.currentTarget;
+              if (el.style.backgroundImage) {
+                el.style.backgroundImage = '';
+              }
+            }}
             style={
               photo.lqip
                 ? {

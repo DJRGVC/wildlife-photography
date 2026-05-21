@@ -308,17 +308,18 @@
       // animations (notably the lightbox close FLIP).
       const SAMPLE_EVERY = 4;
       const tick = () => {
+        // Full early-return during lightbox animations. The ring's
+        // spring catches up the next time the lightbox is idle —
+        // freezing it for ~520ms is invisible to the user but frees
+        // 60Hz worth of main-thread work for the close FLIP.
+        if (document.body.classList.contains('lb-animating')) {
+          raf = requestAnimationFrame(tick);
+          return;
+        }
         s.rx += (s.tx - s.rx) * SPRING;
         s.ry += (s.ty - s.ry) * SPRING;
         ring.style.transform = `translate(${s.rx.toFixed(2)}px, ${s.ry.toFixed(2)}px) translate(-50%, -50%)`;
-        // Skip pixel sampling while the lightbox is mid-animation —
-        // its first frames are time-critical and our drawImage +
-        // getImageData work is exactly the kind of main-thread cost
-        // that competes for budget. Cursor color holds its previous
-        // value for the ~520ms of close (or 700ms of open); no
-        // visible change since the cursor doesn't need to adapt
-        // while the foreground is busy.
-        if (s.active && !document.body.classList.contains('lb-animating')) {
+        if (s.active) {
           sampleCounter++;
           if (sampleCounter >= SAMPLE_EVERY) {
             sampleCounter = 0;

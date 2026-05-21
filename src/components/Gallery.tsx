@@ -437,6 +437,26 @@ export default function Gallery({ wildlife, misc }: Props) {
       // the layers (not just parses HTML).
       void div.offsetHeight;
 
+      // Also run a brief no-op WAAPI animation on the card-shaped
+      // node so V8 JIT-compiles the .animate() + keyframe-parsing +
+      // compositor-layer-allocation path. Without this the first real
+      // close FLIP pays the cold-path cost of all that on the first
+      // frame, exactly where the user sees the teleport.
+      const fakeCard = div.querySelector<HTMLElement>('.lb__card');
+      const fakeImg = div.querySelector<HTMLElement>('.lb__img');
+      if (fakeCard) {
+        fakeCard.animate(
+          [{ transform: 'translate(0,0) scale(1)' }, { transform: 'translate(0,0) scale(0.5)' }],
+          { duration: 1, fill: 'forwards' },
+        );
+      }
+      if (fakeImg) {
+        fakeImg.animate(
+          [{ opacity: 1 }, { opacity: 0 }],
+          { duration: 1, fill: 'forwards' },
+        );
+      }
+
       let frames = 0;
       const tick = () => {
         frames++;
