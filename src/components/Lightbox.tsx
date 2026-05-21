@@ -774,6 +774,50 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
           />
         </svg>
       </button>
+      <button
+        type="button"
+        className="lb__nav lb__nav--prev"
+        aria-label="Previous photo"
+        data-cursor="link"
+        disabled={active.index === 0}
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(-1);
+        }}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            d="M14 6 L8 12 L14 18"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className="lb__nav lb__nav--next"
+        aria-label="Next photo"
+        data-cursor="link"
+        disabled={active.index === active.photos.length - 1}
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(1);
+        }}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            d="M10 6 L16 12 L10 18"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </svg>
+      </button>
     </div>,
     document.body,
   );

@@ -42,12 +42,15 @@ interface Props {
 // for bandwidth without making subsequent tiles visible any sooner.
 const EAGER_COUNT = 3;
 // Number of items at the top of the gallery that get the staggered
-// slide-up entrance. Beyond this they render at rest. 9 is a sweet
-// spot — covers the realistic above-fold tile count across viewports
-// (3 cols × 3 rows on mobile/laptop, often more on widescreen) but
-// keeps the cascade tight enough that the last item isn't still
-// waiting to slide in long after the eye has moved on.
+// slide-up entrance. Beyond this they render at rest. 9 covers the
+// realistic above-fold tile count across viewports.
 const GALLERY_ENTRANCE_COUNT = 9;
+// Stagger ms between item entrances. Computed so the cascade
+// (N items - 1 staggers) fits in ~220ms — matches the cascade
+// window used for the header/intro/contact reveals so the whole
+// page entrance hits the 500ms total cap.
+const GALLERY_STAGGER_MS =
+  GALLERY_ENTRANCE_COUNT > 1 ? 220 / (GALLERY_ENTRANCE_COUNT - 1) : 0;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -238,9 +241,11 @@ function PhotoAlbumBlock({
                   backgroundImage: `url(${p.lqip})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  // Staggered slide-up cascade for the first N items;
-                  // CSS reads --i to compute animation-delay.
+                  // Staggered slide-up cascade for the first N items.
+                  // --i and --stagger-ms together drive animation-delay
+                  // for the .gallery__item--entrance CSS rule.
                   ['--i' as string]: globalIdx,
+                  ['--stagger-ms' as string]: `${GALLERY_STAGGER_MS.toFixed(3)}ms`,
                 }}
                 onClick={(e) => {
                   e.preventDefault();
@@ -624,20 +629,21 @@ const galleryStyles = `
   /* Mask + slide-up entrance for the first row of thumbs. Same
      primitive as the header name, applied to .gallery__img inside
      the already-overflow-hidden .gallery__item. --i (set inline
-     per item from globalIdx) drives a left-to-right cascade.
-     Items beyond GALLERY_ENTRANCE_COUNT don't carry this class and
-     start at rest. */
+     per item from globalIdx) and --stagger-ms (computed in JSX to
+     fit the cascade in ~220ms) together drive a left-to-right
+     cascade. Items beyond GALLERY_ENTRANCE_COUNT don't carry this
+     class and start at rest. */
   .gallery__item--entrance {
-    /* During the entrance, suppress the LQIP backdrop so the slide
-       reveals the image from page-cream, not from a blurred copy of
-       itself. The inline background-image style is still set in JSX
-       for non-entrance items / fallback. */
+    /* During the entrance, suppress both the LQIP backdrop and the
+       cream-deep placeholder colour. The slide reveals the image
+       against the page background — nothing visible "behind" it. */
     background-image: none !important;
+    background-color: transparent !important;
   }
   .gallery__item--entrance .gallery__img {
     transform: translateY(120%);
-    animation: galleryImgEntrance 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    animation-delay: calc(var(--i, 0) * 90ms);
+    animation: galleryImgEntrance 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes galleryImgEntrance {
     to { transform: translateY(0); }

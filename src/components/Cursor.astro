@@ -36,38 +36,48 @@
     will-change: transform;
   }
 
-  /* Ink-colored core with a soft cream halo via box-shadow. Reads as
-     "dark dot, faintly outlined" on cream backgrounds, and "dark dot
-     in a glow" on the photos. The halo carries visibility on mid-tone
-     image regions where mix-blend-mode: difference would produce a
-     near-gray, hard-to-see result. */
+  /* The cursor's "ink" and "cream" tones are warm sepia/parchment
+     to match the site's serif/cream aesthetic — never pure black or
+     pure white. JS samples the pixel under the cursor on every frame
+     and updates --cursor-color (the visible stroke) and --cursor-halo
+     (the subtle outline that carries visibility against the opposite
+     tone). Default state assumes a light background. */
+  .cursor {
+    --cursor-color: rgba(58, 46, 34, 0.92);
+    --cursor-halo: rgba(250, 245, 232, 0.42);
+  }
+
   .cursor__dot {
     width: 8px;
     height: 8px;
-    background: rgba(20, 20, 18, 0.92);
+    background: var(--cursor-color);
     transform: translate(-50%, -50%);
     box-shadow:
-      0 0 0 1.5px rgba(250, 250, 247, 0.55),
-      0 1px 6px rgba(20, 20, 18, 0.25);
+      0 0 0 1.5px var(--cursor-halo),
+      0 1px 6px rgba(40, 30, 20, 0.22);
+    transition:
+      background-color 220ms ease,
+      box-shadow 220ms ease;
   }
 
   .cursor__ring {
     width: 32px;
     height: 32px;
-    border: 1.5px solid rgba(20, 20, 18, 0.78);
+    border: 1.5px solid var(--cursor-color);
     background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     transform: translate(-50%, -50%);
     box-shadow:
-      0 0 0 1px rgba(250, 250, 247, 0.42),
-      0 4px 14px rgba(20, 20, 18, 0.18);
+      0 0 0 1px var(--cursor-halo),
+      0 4px 14px rgba(40, 30, 20, 0.16);
     transition:
       width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
       height 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      border-color 200ms ease,
-      background-color 200ms ease;
+      border-color 220ms ease,
+      background-color 220ms ease,
+      box-shadow 220ms ease;
   }
 
   .cursor__ring[data-kind='link'] {
@@ -78,20 +88,18 @@
   .cursor__ring[data-kind='photo'] {
     width: 84px;
     height: 84px;
-    background: rgba(20, 20, 18, 0.32);
-    border-color: rgba(20, 20, 18, 0.9);
+    background: color-mix(in oklab, var(--cursor-color) 28%, transparent);
   }
 
-  /* The label is inside the ring, layered over photo content — that
-     content varies wildly so the label uses mix-blend-mode: difference
-     to invert whatever's behind it (high contrast even on mid-tone
-     regions where the dot/ring's fixed colors might tie with the bg). */
+  /* Label is over photo content; difference blend keeps it readable
+     against any tone without needing to match the dynamic cursor
+     color logic. */
   .cursor__ring-label {
     font-family: var(--font-serif, ui-serif);
     font-size: 10.5px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #f5f3ec;
+    color: #f5f0e4;
     mix-blend-mode: difference;
     opacity: 0;
     transform: translateY(1px);
@@ -189,14 +197,124 @@
       };
       window.addEventListener('pointerover', onPointerOver);
 
-      // Ring chases target via simple spring. requestAnimationFrame
-      // ensures the work happens once per paint; transform-only writes
-      // mean the browser composites this on the GPU.
+      // Pixel sampling for dynamic cursor color. A 1x1 offscreen
+      // canvas reads the colour under the cursor (drawImage for IMG
+      // elements; computed background-color for everything else).
+      // Luminance maps to either a warm walnut tone (on light bg) or
+      // a warm cream tone (on dark bg) — both deliberately off
+      // pure-black/pure-white to match the site's parchment aesthetic.
+      // Throttled to ~30 Hz inside the existing rAF tick.
+      const sampleCanvas = document.createElement('canvas');
+      sampleCanvas.width = 1;
+      sampleCanvas.height = 1;
+      const sampleCtx = sampleCanvas.getContext('2d', {
+        willReadFrequently: true,
+      }) as CanvasRenderingContext2D | null;
+
+      // Warm tones tuned to the site. Light ≈ #F5F0E4 (warm cream);
+      // dark ≈ #3A2E22 (sepia walnut). Halos are the same tones at
+      // low alpha so the cursor reads as "stroke + glow" rather than
+      // a flat colour.
+      const COLOR_LIGHT = { r: 245, g: 240, b: 228 };
+      const COLOR_DARK = { r: 58, g: 46, b: 34 };
+
+      type RGB = { r: number; g: number; b: number };
+
+      const sampleBg = (x: number, y: number): RGB | null => {
+        const el = document.elementFromPoint(x, y) as HTMLElement | null;
+        if (!el) return null;
+
+        // If the cursor is over an image, sample the actual pixel.
+        const img =
+          el.tagName === 'IMG'
+            ? (el as HTMLImageElement)
+            : el.querySelector?.('img');
+        if (
+          img instanceof HTMLImageElement &&
+          img.complete &&
+          img.naturalWidth > 0 &&
+          sampleCtx
+        ) {
+          try {
+            const rect = img.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              const px = Math.max(0, Math.min(0.999, (x - rect.left) / rect.width));
+              const py = Math.max(0, Math.min(0.999, (y - rect.top) / rect.height));
+              const sx = Math.floor(px * img.naturalWidth);
+              const sy = Math.floor(py * img.naturalHeight);
+              sampleCtx.clearRect(0, 0, 1, 1);
+              sampleCtx.drawImage(img, sx, sy, 1, 1, 0, 0, 1, 1);
+              const data = sampleCtx.getImageData(0, 0, 1, 1).data;
+              return { r: data[0], g: data[1], b: data[2] };
+            }
+          } catch {
+            // CORS / tainted canvas / not decoded yet — fall through.
+          }
+        }
+
+        // Walk up the DOM until we find a non-transparent background.
+        let cur: Element | null = el;
+        while (cur) {
+          const bg = window.getComputedStyle(cur).backgroundColor;
+          const m = bg.match(
+            /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/,
+          );
+          if (m) {
+            const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
+            if (a > 0.05) {
+              return {
+                r: parseInt(m[1], 10),
+                g: parseInt(m[2], 10),
+                b: parseInt(m[3], 10),
+              };
+            }
+          }
+          cur = cur.parentElement;
+        }
+        return null;
+      };
+
+      const luminance = ({ r, g, b }: RGB) =>
+        (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+      // Smoothed luminance with light hysteresis around the threshold,
+      // so a cursor sitting right on the edge between light/dark
+      // regions doesn't oscillate.
+      let smoothedLum = 0.85; // start light
+      const setColorsFor = (lum: number) => {
+        smoothedLum = smoothedLum + (lum - smoothedLum) * 0.35;
+        // Above ~0.5 = light bg → warm dark cursor; below = warm cream.
+        const isDark = smoothedLum < 0.45;
+        const c = isDark ? COLOR_LIGHT : COLOR_DARK;
+        const halo = isDark ? COLOR_DARK : COLOR_LIGHT;
+        root.style.setProperty(
+          '--cursor-color',
+          `rgba(${c.r}, ${c.g}, ${c.b}, 0.92)`,
+        );
+        root.style.setProperty(
+          '--cursor-halo',
+          `rgba(${halo.r}, ${halo.g}, ${halo.b}, 0.45)`,
+        );
+      };
+
+      // Ring chases target via simple spring. Pixel sampling is done
+      // every Nth frame so the work fits comfortably under a frame
+      // budget even on slower devices.
       let raf = 0;
+      let sampleCounter = 0;
+      const SAMPLE_EVERY = 2; // ~30Hz at 60fps
       const tick = () => {
         s.rx += (s.tx - s.rx) * SPRING;
         s.ry += (s.ty - s.ry) * SPRING;
         ring.style.transform = `translate(${s.rx.toFixed(2)}px, ${s.ry.toFixed(2)}px) translate(-50%, -50%)`;
+        if (s.active) {
+          sampleCounter++;
+          if (sampleCounter >= SAMPLE_EVERY) {
+            sampleCounter = 0;
+            const bg = sampleBg(s.tx, s.ty);
+            if (bg) setColorsFor(luminance(bg));
+          }
+        }
         raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);

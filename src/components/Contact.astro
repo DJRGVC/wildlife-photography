@@ -5,11 +5,20 @@ const emailObfuscated = `${emailLocal} (at) ${emailDomain.replace('.', ' (dot) '
 const linkedin = 'https://www.linkedin.com/in/daniel-grant-a85683221/';
 const linkedinDisplay = 'linkedin.com/in/daniel-grant';
 const headingChars = [...'Contact'];
+const CASCADE_WINDOW_MS = 220;
+const headingStagger =
+  headingChars.length > 1
+    ? CASCADE_WINDOW_MS / (headingChars.length - 1)
+    : 0;
 ---
 
 <section id="contact" class="contact">
   <div class="contact__inner">
-    <h2 class="contact__heading" aria-label="Contact">
+    <h2
+      class="contact__heading"
+      aria-label="Contact"
+      style={`--stagger-ms:${headingStagger.toFixed(3)}ms`}
+    >
       {
         headingChars.map((c, i) => (
           <span class="contact__heading-mask" style={`--i:${i}`} aria-hidden="true">
@@ -67,8 +76,8 @@ const headingChars = [...'Contact'];
   .contact__heading-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: contactCharReveal 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    animation-delay: calc(var(--i, 0) * 40ms);
+    animation: contactCharReveal 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes contactCharReveal {
     to { transform: translateY(0); }

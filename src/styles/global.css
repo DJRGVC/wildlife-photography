@@ -261,6 +261,55 @@
   background: color-mix(in oklab, var(--color-cream-top) 95%, transparent);
 }
 
+/* Minimal prev/next chevron buttons. Sit on the viewport edges so
+   they don't crowd the card, but still well within thumb reach on
+   mobile. Animate in on lightbox open via the existing closeBtn
+   opacity animation (same fade timing) — we set initial opacity:0
+   and the open useLayoutEffect animates them in alongside the
+   close button. */
+.lb__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  background: color-mix(in oklab, var(--color-cream-top) 70%, transparent);
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px -3px rgba(28, 22, 12, 0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition:
+    background-color 200ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+  z-index: 2;
+}
+.lb--open .lb__nav,
+.lb--opening .lb__nav {
+  opacity: 1;
+}
+.lb__nav--prev { left: 24px; }
+.lb__nav--next { right: 24px; }
+.lb__nav:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-cream-top) 95%, transparent);
+  transform: translateY(-50%) scale(1.04);
+}
+.lb__nav:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.lb__nav:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--color-ink) 35%, transparent);
+  outline-offset: 2px;
+}
+
 @media (max-width: 640px) {
   .lb { padding: 16px; }
   .lb__card {
@@ -276,6 +325,9 @@
   }
   .lb__caption { margin-top: 14px; padding: 0 4px 4px; }
   .lb__caption .caption__title { font-size: 18px; }
+  .lb__nav { width: 38px; height: 38px; }
+  .lb__nav--prev { left: 8px; }
+  .lb__nav--next { right: 8px; }
   .lb__caption .caption__sub { font-size: 13px; }
   .lb__caption .caption__scene { font-size: 13px; }
   .lb__close { top: 16px; right: 16px; }

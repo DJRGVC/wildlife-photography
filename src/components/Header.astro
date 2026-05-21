@@ -1,12 +1,32 @@
 ---
 const name = 'Daniel Grant';
 const nameChars = [...name];
+const navLabel = 'Contact';
+const navChars = [...navLabel];
+
+// Animation = 280ms; cascade window = 220ms; total per cascade = 500ms.
+// Stagger computed per-element so the cascade fits regardless of
+// letter count.
+const CASCADE_WINDOW_MS = 220;
+const ANIM_MS = 280;
+const nameStagger =
+  nameChars.length > 1 ? CASCADE_WINDOW_MS / (nameChars.length - 1) : 0;
+const navStagger =
+  navChars.length > 1 ? CASCADE_WINDOW_MS / (navChars.length - 1) : 0;
+// Nav "Contact" picks up after the name's full cascade finishes.
+const NAV_BASE_MS = CASCADE_WINDOW_MS + ANIM_MS;
 ---
 
 <div id="header-sentinel" aria-hidden="true"></div>
 <header id="site-header" class="site-header">
   <div class="site-header__inner">
-    <a href="#top" class="site-header__name" data-cursor="link" aria-label={name}>
+    <a
+      href="#top"
+      class="site-header__name"
+      data-cursor="link"
+      aria-label={name}
+      style={`--stagger-ms:${nameStagger.toFixed(3)}ms`}
+    >
       {
         nameChars.map((c, i) => (
           <span class="site-header__name-mask" style={`--i:${i}`} aria-hidden="true">
@@ -16,7 +36,21 @@ const nameChars = [...name];
       }
     </a>
     <nav class="site-header__nav" aria-label="Primary">
-      <a href="#contact" data-cursor="link">Contact</a>
+      <a
+        href="#contact"
+        class="site-header__nav-link"
+        data-cursor="link"
+        aria-label={navLabel}
+        style={`--stagger-ms:${navStagger.toFixed(3)}ms; --base-ms:${NAV_BASE_MS}ms`}
+      >
+        {
+          navChars.map((c, i) => (
+            <span class="site-header__nav-mask" style={`--i:${i}`} aria-hidden="true">
+              <span class="site-header__nav-reveal">{c}</span>
+            </span>
+          ))
+        }
+      </a>
     </nav>
   </div>
 </header>
@@ -72,26 +106,22 @@ const nameChars = [...name];
     text-decoration: none;
   }
 
-  /* Per-letter mask + slide-up reveal. Each character is its own
-     overflow-hidden clip with an inner span pushed below at
-     translateY(120%); each one slides up to translateY(0). --i (set
-     inline per letter from the chars array) drives animation-delay
-     so the cascade runs left-to-right. 120% gives a brief fully-
-     hidden beat before the letter pokes out. */
+  /* Per-letter mask + slide-up reveal. The outer span clips a single
+     line height; the inner span starts pushed below at translateY(120%)
+     and animates to translateY(0). --i (set inline per letter from the
+     chars array) and --stagger-ms (set on the link, computed to fit the
+     full cascade in ~220ms) together drive a left-to-right wave. */
   .site-header__name-mask {
     display: inline-block;
     overflow: hidden;
     vertical-align: bottom;
     line-height: 1.05;
   }
-  .site-header__name-mask:has(.site-header__name-reveal:empty) {
-    /* No-op safety for empty spans; whitespace handled via &nbsp;. */
-  }
   .site-header__name-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: nameReveal 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    animation-delay: calc(var(--i, 0) * 35ms);
+    animation: nameReveal 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
     white-space: pre;
   }
   @keyframes nameReveal {
@@ -104,7 +134,7 @@ const nameChars = [...name];
     gap: 24px;
   }
 
-  .site-header__nav a {
+  .site-header__nav-link {
     font-family: var(--font-serif);
     font-weight: 400;
     font-size: 16px;
@@ -119,11 +149,30 @@ const nameChars = [...name];
       text-underline-offset 240ms ease;
   }
 
-  .site-header__nav a:hover,
-  .site-header__nav a:focus-visible {
+  .site-header__nav-link:hover,
+  .site-header__nav-link:focus-visible {
     text-decoration-color: currentColor;
     text-underline-offset: 5px;
     outline: 0;
+  }
+
+  /* Same reveal primitive for the nav link, but offset by --base-ms so
+     it starts after the name has finished cascading in. */
+  .site-header__nav-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    line-height: 1;
+  }
+  .site-header__nav-reveal {
+    display: inline-block;
+    transform: translateY(120%);
+    animation: navReveal 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--base-ms, 0ms) + var(--i, 0) * var(--stagger-ms, 0ms));
+    white-space: pre;
+  }
+  @keyframes navReveal {
+    to { transform: translateY(0); }
   }
 
   @media (max-width: 600px) {
@@ -133,13 +182,14 @@ const nameChars = [...name];
     .site-header__name {
       font-size: 22px;
     }
-    .site-header__nav a {
+    .site-header__nav-link {
       font-size: 15px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .site-header__name-reveal {
+    .site-header__name-reveal,
+    .site-header__nav-reveal {
       transform: none;
       animation: none;
     }
