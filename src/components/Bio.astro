@@ -1,19 +1,43 @@
 ---
+const para1 =
+  'Occasionally, I venture outdoors and point my camera at things—often animals, but not exclusively.';
+const para2 = 'Enjoy a selection of my favorites below.';
+const para1Words = para1.split(' ');
+const para2Words = para2.split(' ');
+// Para 2 picks up after para 1's first word has finished its slide,
+// so the reading cadence flows without empty pause but the second
+// paragraph's first word doesn't race the first paragraph's last.
+const PARA2_BASE_MS = 600;
 ---
 
 <section class="intro">
-  <p class="intro__line">
-    <span class="intro__line-mask"
-      ><span class="intro__line-reveal"
-        >Occasionally, I venture outdoors and point my camera at things&mdash;often
-        animals, but not exclusively.</span
-      ></span
-    >
+  <p class="intro__line" aria-label={para1}>
+    {
+      para1Words.map((word, i, arr) => (
+        <Fragment>
+          <span class="intro__word-mask" style={`--i:${i}`} aria-hidden="true">
+            <span class="intro__word-reveal">{word}</span>
+          </span>
+          {i < arr.length - 1 ? ' ' : ''}
+        </Fragment>
+      ))
+    }
   </p>
-  <p class="intro__line intro__line--delay">
-    <span class="intro__line-mask"
-      ><span class="intro__line-reveal">Enjoy a selection of my favorites below.</span></span
-    >
+  <p
+    class="intro__line"
+    aria-label={para2}
+    style={`--para-base:${PARA2_BASE_MS}ms`}
+  >
+    {
+      para2Words.map((word, i, arr) => (
+        <Fragment>
+          <span class="intro__word-mask" style={`--i:${i}`} aria-hidden="true">
+            <span class="intro__word-reveal">{word}</span>
+          </span>
+          {i < arr.length - 1 ? ' ' : ''}
+        </Fragment>
+      ))
+    }
   </p>
 </section>
 
@@ -39,32 +63,35 @@
     margin-top: 1.6em;
   }
 
-  /* Mask + slide-up reveal, same pattern as the header name —
-     overflow-hidden block clip; inner span pushed below and animated
-     back to rest. Wrapping a multi-line paragraph in a single mask
-     means the whole copy block emerges as one (no per-line cascade);
-     the second paragraph picks up after a beat via animation-delay
-     so the eye reads through them in sequence. */
-  .intro__line { overflow: hidden; }
-  .intro__line-mask {
-    display: block;
+  /* Per-word mask + slide-up reveal — same primitive as the header
+     name, applied per word so the paragraph cascades left-to-right.
+     Each word is its own overflow-hidden clip; the inner span starts
+     pushed below at translateY(120%) and animates to rest. --i (set
+     inline per word) drives the stagger; --para-base shifts the
+     whole paragraph forward so the second one picks up after the
+     first has gotten going. */
+  .intro__line {
+    --para-base: 0ms;
+  }
+  .intro__word-mask {
+    display: inline-block;
     overflow: hidden;
+    vertical-align: bottom;
+    line-height: inherit;
   }
-  .intro__line-reveal {
-    display: block;
+  .intro__word-reveal {
+    display: inline-block;
     transform: translateY(120%);
-    animation: introReveal 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    animation-delay: 0.18s;
+    animation: introWordReveal 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--para-base, 0ms) + var(--i, 0) * 70ms);
+    white-space: pre;
   }
-  .intro__line--delay .intro__line-reveal {
-    animation-delay: 0.36s;
-  }
-  @keyframes introReveal {
+  @keyframes introWordReveal {
     to { transform: translateY(0); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .intro__line-reveal {
+    .intro__word-reveal {
       transform: none;
       animation: none;
     }

@@ -42,10 +42,12 @@ interface Props {
 // for bandwidth without making subsequent tiles visible any sooner.
 const EAGER_COUNT = 3;
 // Number of items at the top of the gallery that get the staggered
-// slide-up entrance. Beyond this they render at rest. ~6 covers the
-// realistic above-fold tile count across viewports without dragging
-// the cascade out longer than feels intentional.
-const GALLERY_ENTRANCE_COUNT = 6;
+// slide-up entrance. Beyond this they render at rest. 9 is a sweet
+// spot — covers the realistic above-fold tile count across viewports
+// (3 cols × 3 rows on mobile/laptop, often more on widescreen) but
+// keeps the cascade tight enough that the last item isn't still
+// waiting to slide in long after the eye has moved on.
+const GALLERY_ENTRANCE_COUNT = 9;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -344,6 +346,13 @@ export default function Gallery({ wildlife, misc }: Props) {
   // RAF id of the in-flight smooth-scroll, so a fast second nav can
   // cancel the previous animation before starting a new one.
   const scrollRafRef = useRef<number | null>(null);
+  // Final Y of the in-flight smooth-scroll. If the user closes the
+  // lightbox mid-scroll we cancel the RAF and snap window.scrollY
+  // straight here — otherwise the close FLIP lands at fromRect
+  // coords that don't match the actual thumb position (because the
+  // page is still moving toward them), which reads as the image
+  // "teleporting" to its final spot once the page catches up.
+  const scrollTargetRef = useRef<number | null>(null);
 
   const pick = useCallback(
     (p: GalleryPhoto, sourceEl: HTMLElement, globalIndex: number) => {
@@ -406,6 +415,7 @@ export default function Gallery({ wildlife, misc }: Props) {
         if (scrollRafRef.current !== null) {
           cancelAnimationFrame(scrollRafRef.current);
         }
+        scrollTargetRef.current = targetY;
         const startY = window.scrollY;
         const startTime = performance.now();
         const dur = 460;
@@ -417,6 +427,7 @@ export default function Gallery({ wildlife, misc }: Props) {
             scrollRafRef.current = requestAnimationFrame(step);
           } else {
             scrollRafRef.current = null;
+            scrollTargetRef.current = null;
           }
         };
         scrollRafRef.current = requestAnimationFrame(step);
@@ -445,6 +456,24 @@ export default function Gallery({ wildlife, misc }: Props) {
     setHiddenThumb(hiddenKeyRef.current, null);
     hiddenKeyRef.current = null;
     setLbState(null);
+  }, []);
+
+  // Fires when Lightbox's close FLIP *starts* (vs `close` above, which
+  // fires when it finishes). If a smooth-scroll animation is still in
+  // flight from a recent arrow-nav, we cancel its RAF and snap the
+  // page to the target Y. Without this, the close FLIP lands at
+  // fromRect coords computed against the post-scroll position while
+  // the page is still mid-scroll — visible as the image jumping the
+  // remaining stretch once the scroll catches up.
+  const handleCloseStart = useCallback(() => {
+    if (scrollRafRef.current !== null) {
+      cancelAnimationFrame(scrollRafRef.current);
+      scrollRafRef.current = null;
+    }
+    if (scrollTargetRef.current !== null) {
+      window.scrollTo(0, scrollTargetRef.current);
+      scrollTargetRef.current = null;
+    }
   }, []);
 
   const sectionBlocks = useMemo(() => {
@@ -501,7 +530,12 @@ export default function Gallery({ wildlife, misc }: Props) {
         {sectionBlocks}
         <style>{galleryStyles}</style>
       </section>
-      <Lightbox state={lbState} onClose={close} onIndexChange={handleIndexChange} />
+      <Lightbox
+        state={lbState}
+        onClose={close}
+        onCloseStart={handleCloseStart}
+        onIndexChange={handleIndexChange}
+      />
     </>
   );
 }
@@ -565,7 +599,7 @@ const galleryStyles = `
     display: block;
     overflow: hidden;
     text-decoration: none;
-    cursor: zoom-in;
+    cursor: pointer;
     border-radius: 6px;
     transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     transform-style: preserve-3d;
@@ -580,18 +614,29 @@ const galleryStyles = `
     width: 100%;
     height: 100%;
     object-fit: cover;
+    /* Match the parent .gallery__item border-radius so the image is
+       rounded throughout the entrance slide-up, not just once it has
+       come to rest inside the rounded clip mask. */
+    border-radius: inherit;
   }
   .gallery__img.is-loaded { opacity: 1; }
 
-  /* Mask + slide-up entrance for the first row of thumbs — same
-     pattern as the header name, applied to .gallery__img inside the
-     already-overflow-hidden .gallery__item. --i (set inline per item
-     from globalIdx) drives a staggered cascade so the row reads
-     left-to-right. Items beyond GALLERY_ENTRANCE_COUNT don't carry the
-     class and start at rest. */
+  /* Mask + slide-up entrance for the first row of thumbs. Same
+     primitive as the header name, applied to .gallery__img inside
+     the already-overflow-hidden .gallery__item. --i (set inline
+     per item from globalIdx) drives a left-to-right cascade.
+     Items beyond GALLERY_ENTRANCE_COUNT don't carry this class and
+     start at rest. */
+  .gallery__item--entrance {
+    /* During the entrance, suppress the LQIP backdrop so the slide
+       reveals the image from page-cream, not from a blurred copy of
+       itself. The inline background-image style is still set in JSX
+       for non-entrance items / fallback. */
+    background-image: none !important;
+  }
   .gallery__item--entrance .gallery__img {
     transform: translateY(120%);
-    animation: galleryImgEntrance 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: galleryImgEntrance 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * 90ms);
   }
   @keyframes galleryImgEntrance {

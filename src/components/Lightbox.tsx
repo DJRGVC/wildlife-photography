@@ -31,6 +31,11 @@ interface Props {
   // to hide the new thumb (and reveal the old one) and to push a fresh
   // `fromRect` for the close FLIP back through the `state` prop.
   onIndexChange?: (newIndex: number) => void;
+  // Fires at the *start* of close (vs onClose, which fires at the end
+  // after the close FLIP completes). Lets the parent cancel any
+  // in-flight scroll animation and snap the page to the final scroll
+  // position so the close FLIP doesn't chase a moving target.
+  onCloseStart?: () => void;
 }
 
 type Phase = 'closed' | 'opening' | 'open' | 'closing';
@@ -105,7 +110,7 @@ type SwapInfo = {
   dims: { width: number; height: number };
 };
 
-export default function Lightbox({ state, onClose, onIndexChange }: Props) {
+export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }: Props) {
   const [active, setActive] = useState<LightboxState | null>(null);
   const [phase, setPhase] = useState<Phase>('closed');
   const [mounted, setMounted] = useState(false);
@@ -188,6 +193,12 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
       setOutgoing(null);
     }
 
+    // Notify the parent that close is starting *now* (vs onClose,
+    // which fires at the end). Gallery uses this to cancel its
+    // in-flight scroll RAF and snap the page to the final target,
+    // so the close FLIP doesn't aim at a thumb that's still moving.
+    onCloseStart?.();
+
     setPhase('closing');
 
     const card = cardRef.current;
@@ -243,20 +254,52 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
       ...opts,
       duration: CLOSE_DURATION * 0.85,
     });
-    card?.animate(
-      [
-        { transform: 'translate(0, 0) scale(1)' },
-        { transform: toTransform },
-      ],
-      opts,
-    );
 
-    window.setTimeout(() => {
+    // Capture the card's current computed transform BEFORE cancelling
+    // any in-flight open animation. If the user closes while the open
+    // FLIP is still running (or before any animation has touched the
+    // card), commitStyles pins the current value as inline style and
+    // we animate from there to the close target — no snap to identity
+    // and no "teleport toward initial position" caused by the new
+    // animation overriding mid-flight with its from-keyframe.
+    let cardAnim: Animation | null = null;
+    if (card) {
+      const live = card.getAnimations();
+      const fromTransform = window.getComputedStyle(card).transform;
+      for (const a of live) {
+        try {
+          a.commitStyles();
+        } catch {
+          // commitStyles can throw if the animation has no effect; ignore.
+        }
+        a.cancel();
+      }
+      card.style.transform = fromTransform === 'none' ? '' : fromTransform;
+      cardAnim = card.animate(
+        [
+          { transform: fromTransform === 'none' ? 'translate(0, 0) scale(1)' : fromTransform },
+          { transform: toTransform },
+        ],
+        opts,
+      );
+    }
+
+    const finish = () => {
       setPhase('closed');
       setActive(null);
       onClose();
-    }, CLOSE_DURATION);
-  }, [phase, active, onClose, state]);
+    };
+
+    // Use the card animation's finished promise (vs setTimeout) so the
+    // unmount lands on the same frame as the FLIP's last keyframe,
+    // never one or two frames early — that gap is what reads as the
+    // image "teleporting" the final stretch.
+    if (cardAnim) {
+      cardAnim.finished.then(finish).catch(finish);
+    } else {
+      window.setTimeout(finish, CLOSE_DURATION);
+    }
+  }, [phase, active, onClose, onCloseStart, state]);
 
   // Arrow-key navigation between photos. Both the outgoing and incoming
   // images are rendered together inside the media wrapper; the wrapper
