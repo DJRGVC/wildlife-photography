@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const ASTRO_DIR = path.join(ROOT, 'dist', '_astro');
-const CF_MAX_BYTES = 24 * 1024 * 1024;
+const CF_MAX_BYTES = 25 * 1024 * 1024;
 
 let removed = 0;
 let kept = 0;

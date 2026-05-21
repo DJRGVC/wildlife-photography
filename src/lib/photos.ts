@@ -54,12 +54,13 @@ const MISC_MODULES = import.meta.glob<{ default: ImageMetadata }>(
 const VARIANT_WIDTHS = [720, 1440] as const;
 const FULL_MAX_WIDTH = 2200;
 const FORMAT = 'webp' as const;
-// Cloudflare Pages enforces a 25 MiB per-asset upload limit. We serve
-// the byte-for-byte original as fullSrc when it fits comfortably under
-// that ceiling so the lightbox is genuinely lossless; for anything
-// larger we fall back to the Astro-processed WebP variant (which
-// strip-originals.mjs leaves alone for the same reason).
-const CF_MAX_BYTES = 24 * 1024 * 1024;
+// Cloudflare Pages enforces a 25 MiB per-asset upload limit (hard
+// ceiling, all plans). We serve the byte-for-byte original as fullSrc
+// when it fits under that limit so the lightbox is genuinely
+// lossless; anything larger falls back to the Astro-processed WebP
+// variant. strip-originals.mjs uses the same threshold so its decisions
+// stay in sync with this file's.
+const CF_MAX_BYTES = 25 * 1024 * 1024;
 
 function readMeta(key: string): PhotoMeta | null {
   const map = imageData as unknown as Record<string, PhotoMeta>;
