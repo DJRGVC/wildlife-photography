@@ -46,11 +46,11 @@ const EAGER_COUNT = 3;
 // realistic above-fold tile count across viewports.
 const GALLERY_ENTRANCE_COUNT = 9;
 // Stagger ms between item entrances. Computed so the cascade fits in
-// ~550ms — matches the cascade window used for the header/intro/
-// contact reveals (animation 700ms + cascade window 550ms ≈ 1.25s
+// ~700ms — matches the cascade window used for the header/intro/
+// contact reveals (animation 900ms + cascade window 700ms ≈ 1.6s
 // total).
 const GALLERY_STAGGER_MS =
-  GALLERY_ENTRANCE_COUNT > 1 ? 550 / (GALLERY_ENTRANCE_COUNT - 1) : 0;
+  GALLERY_ENTRANCE_COUNT > 1 ? 700 / (GALLERY_ENTRANCE_COUNT - 1) : 0;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -642,7 +642,7 @@ const galleryStyles = `
   }
   .gallery__item--entrance .gallery__img {
     transform: translateY(120%);
-    animation: galleryImgEntrance 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: galleryImgEntrance 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes galleryImgEntrance {

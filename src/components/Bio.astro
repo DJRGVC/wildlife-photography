@@ -5,12 +5,12 @@ const para2 = 'Enjoy a selection of my favorites below.';
 const para1Chars = [...para1];
 const para2Chars = [...para2];
 
-// Animation = 700ms; cascade window = 550ms; total per cascade ≈ 1.25s.
+// Animation = 900ms; cascade window = 700ms; total per cascade ≈ 1.6s.
 // Per-letter stagger is computed so the last letter starts at the end
 // of the cascade window regardless of paragraph length — the longer
 // the sentence, the faster the wave passes, but the total animation
 // fits the same overall envelope.
-const CASCADE_WINDOW_MS = 550;
+const CASCADE_WINDOW_MS = 700;
 const stagger1 =
   para1Chars.length > 1 ? CASCADE_WINDOW_MS / (para1Chars.length - 1) : 0;
 const stagger2 =
@@ -93,7 +93,7 @@ const stagger2 =
   .intro__char-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: introCharReveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: introCharReveal 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes introCharReveal {

@@ -7,14 +7,15 @@ const navChars = [...navLabel];
 // Animation = 280ms; cascade window = 220ms; total per cascade = 500ms.
 // Stagger computed per-element so the cascade fits regardless of
 // letter count.
-const CASCADE_WINDOW_MS = 550;
-const ANIM_MS = 700;
+const CASCADE_WINDOW_MS = 700;
+const ANIM_MS = 900;
 const nameStagger =
   nameChars.length > 1 ? CASCADE_WINDOW_MS / (nameChars.length - 1) : 0;
 const navStagger =
   navChars.length > 1 ? CASCADE_WINDOW_MS / (navChars.length - 1) : 0;
-// Nav "Contact" picks up after the name's full cascade finishes.
-const NAV_BASE_MS = CASCADE_WINDOW_MS + ANIM_MS;
+// Nav "Contact" cascades in parallel with the rest of the page —
+// starts at t=0 alongside the gallery images.
+const NAV_BASE_MS = 0;
 ---
 
 <div id="header-sentinel" aria-hidden="true"></div>
@@ -120,7 +121,7 @@ const NAV_BASE_MS = CASCADE_WINDOW_MS + ANIM_MS;
   .site-header__name-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: nameReveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: nameReveal 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
     white-space: pre;
   }
@@ -167,7 +168,7 @@ const NAV_BASE_MS = CASCADE_WINDOW_MS + ANIM_MS;
   .site-header__nav-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: navReveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: navReveal 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--base-ms, 0ms) + var(--i, 0) * var(--stagger-ms, 0ms));
     white-space: pre;
   }
