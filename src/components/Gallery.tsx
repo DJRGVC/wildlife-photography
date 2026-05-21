@@ -46,11 +46,11 @@ const EAGER_COUNT = 3;
 // realistic above-fold tile count across viewports.
 const GALLERY_ENTRANCE_COUNT = 9;
 // Stagger ms between item entrances. Computed so the cascade fits in
-// ~1100ms — matches the cascade window used for the header/intro/
-// contact reveals (animation 1400ms + cascade window 1100ms ≈ 2.5s
-// total, the slower pacing the user wanted).
+// ~550ms — matches the cascade window used for the header/intro/
+// contact reveals (animation 700ms + cascade window 550ms ≈ 1.25s
+// total).
 const GALLERY_STAGGER_MS =
-  GALLERY_ENTRANCE_COUNT > 1 ? 1100 / (GALLERY_ENTRANCE_COUNT - 1) : 0;
+  GALLERY_ENTRANCE_COUNT > 1 ? 550 / (GALLERY_ENTRANCE_COUNT - 1) : 0;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -231,7 +231,7 @@ function PhotoAlbumBlock({
                 }`}
                 data-photo-key={p.key}
                 data-cursor="photo"
-                data-cursor-label={`View · ${String(globalIdx + 1).padStart(2, '0')}`}
+                data-cursor-label="View"
                 href={p.fullSrc}
                 aria-label={alt}
                 style={{
@@ -642,7 +642,7 @@ const galleryStyles = `
   }
   .gallery__item--entrance .gallery__img {
     transform: translateY(120%);
-    animation: galleryImgEntrance 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: galleryImgEntrance 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes galleryImgEntrance {

@@ -238,21 +238,16 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
       fill: 'forwards',
     };
 
-    bg?.animate(
-      [
-        {
-          opacity: 1,
-          backdropFilter: 'blur(28px) saturate(115%)',
-          WebkitBackdropFilter: 'blur(28px) saturate(115%)',
-        },
-        {
-          opacity: 0,
-          backdropFilter: 'blur(0px) saturate(100%)',
-          WebkitBackdropFilter: 'blur(0px) saturate(100%)',
-        },
-      ],
-      opts,
-    );
+    // Just animate opacity on the backdrop — DON'T animate
+    // backdrop-filter radius. Animating blur from 28px→0px forces a
+    // full-viewport pixel-sampling pass every frame, and on weaker
+    // GPUs (iOS Safari especially) the work spills into the main
+    // thread and drops frames *across all the close animations* —
+    // visible as the card "teleporting" or skipping frames toward
+    // the thumbnail. With static blur, the radius doesn't change
+    // each frame; the backdrop fades out via alpha alone, which the
+    // compositor can handle cheaply.
+    bg?.animate([{ opacity: 1 }, { opacity: 0 }], opts);
     closeBtn?.animate([{ opacity: 1 }, { opacity: 0 }], { ...opts, duration: 220 });
     // Single-keyframe form: WAAPI interpolates from the element's
     // current computed opacity to 0. Important when closing mid-nav,
