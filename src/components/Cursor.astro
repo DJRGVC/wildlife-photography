@@ -302,7 +302,11 @@
       // budget even on slower devices.
       let raf = 0;
       let sampleCounter = 0;
-      const SAMPLE_EVERY = 2; // ~30Hz at 60fps
+      // Sample bg colour every 4th frame (~15Hz at 60fps). The drawImage
+      // + getImageData round-trip is fast but not free; lower frequency
+      // keeps main-thread work out of competition with concurrent
+      // animations (notably the lightbox close FLIP).
+      const SAMPLE_EVERY = 4;
       const tick = () => {
         s.rx += (s.tx - s.rx) * SPRING;
         s.ry += (s.ty - s.ry) * SPRING;

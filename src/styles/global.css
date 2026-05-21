@@ -154,6 +154,22 @@
   box-shadow: none;
 }
 
+/* Strip backdrop-filter from the lightbox backdrop during close.
+   Even with a static blur radius, the filter is recomputed on every
+   repaint as the bg's opacity animates from 1 to 0 — for a full-
+   viewport blurred element that's the single most expensive thing
+   the GPU is doing during the close FLIP. The visual cost is a
+   sharp page beneath the cream tint instead of a blurred one, for
+   the ~520ms it takes the bg to fade out; in practice the eye is
+   following the shrinking card, not what's behind the tint, so the
+   tradeoff is invisible. The cream-tinted alpha layer still fades
+   out as before. Same for the site-header's backdrop-filter, which
+   the bg's transparency reveals during close. */
+.lb--closing .lb__bg {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .lb__media {
   position: relative;
   z-index: 1;
