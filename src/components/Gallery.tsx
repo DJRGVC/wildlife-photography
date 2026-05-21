@@ -643,7 +643,7 @@ const galleryStyles = `
   }
   .gallery__item--entrance .gallery__img {
     transform: translateY(120%);
-    animation: galleryImgEntrance 400ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: galleryImgEntrance 2000ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes galleryImgEntrance {

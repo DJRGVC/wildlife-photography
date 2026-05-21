@@ -144,6 +144,16 @@
   box-shadow: 0 14px 28px -8px rgba(28, 22, 12, 0.18);
 }
 
+/* Same idea on close. The card transforms (translate+scale) every
+   frame as it shrinks back to the thumbnail, and the big shadow
+   re-rasterizes alongside that transform — dropping frames on
+   weaker GPUs, which reads as the card "teleporting" toward its
+   end position. Killing the shadow entirely during the close frees
+   up paint budget for the actual FLIP animation. */
+.lb--closing .lb__card-bg {
+  box-shadow: none;
+}
+
 .lb__media {
   position: relative;
   z-index: 1;
@@ -294,6 +304,13 @@
 .lb--open .lb__nav,
 .lb--opening .lb__nav {
   opacity: 1;
+}
+/* Snap the nav arrows out instantly on close rather than running a
+   parallel CSS transition. Fewer concurrent animations during the
+   close FLIP = more frame budget for the card transform itself. */
+.lb--closing .lb__nav {
+  transition: none;
+  opacity: 0;
 }
 /* Pull the chevrons in close to the photo — on wide viewports they
    overlap the image edge slightly (chevron centered on the image's
