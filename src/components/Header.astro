@@ -7,8 +7,8 @@ const navChars = [...navLabel];
 // Animation = 280ms; cascade window = 220ms; total per cascade = 500ms.
 // Stagger computed per-element so the cascade fits regardless of
 // letter count.
-const CASCADE_WINDOW_MS = 220;
-const ANIM_MS = 280;
+const CASCADE_WINDOW_MS = 1100;
+const ANIM_MS = 1400;
 const nameStagger =
   nameChars.length > 1 ? CASCADE_WINDOW_MS / (nameChars.length - 1) : 0;
 const navStagger =
@@ -120,7 +120,7 @@ const NAV_BASE_MS = CASCADE_WINDOW_MS + ANIM_MS;
   .site-header__name-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: nameReveal 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: nameReveal 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
     white-space: pre;
   }
@@ -167,7 +167,7 @@ const NAV_BASE_MS = CASCADE_WINDOW_MS + ANIM_MS;
   .site-header__nav-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: navReveal 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: navReveal 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--base-ms, 0ms) + var(--i, 0) * var(--stagger-ms, 0ms));
     white-space: pre;
   }

@@ -295,8 +295,13 @@
 .lb--opening .lb__nav {
   opacity: 1;
 }
-.lb__nav--prev { left: 24px; }
-.lb__nav--next { right: 24px; }
+/* Sit ~40px outside the lightbox image at wide viewports (image is
+   capped at 1080px wide → half-width 540 → 600 offset from center
+   leaves the chevron just outside the photo's edge). On narrower
+   viewports where 50vw-600 goes negative, clamp to 16px from the
+   viewport edge so they never crowd the photo or fall off-screen. */
+.lb__nav--prev { left: max(16px, calc(50vw - 600px)); }
+.lb__nav--next { right: max(16px, calc(50vw - 600px)); }
 .lb__nav:hover:not(:disabled) {
   background: color-mix(in oklab, var(--color-cream-top) 95%, transparent);
   transform: translateY(-50%) scale(1.04);

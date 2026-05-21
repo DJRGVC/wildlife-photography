@@ -127,6 +127,14 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
   // don't compute the next target from stale `prev` inside setState.
   const navBusyRef = useRef(false);
   const currentIndexRef = useRef(0);
+  // Synchronous re-entry guard for close(). The phase === 'closing'
+  // check below is React state and updates asynchronously, so a
+  // double-tap on the close button or an Esc-then-click race can run
+  // close() twice — the second call captures the in-flight close
+  // animation as the "current" state, cancels it, and starts a NEW
+  // close animation from somewhere already mid-flight. That's the
+  // "teleports toward its initial position" symptom.
+  const closingRef = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const cardBgRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -163,7 +171,9 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
   }, [state, active]);
 
   const close = useCallback(() => {
+    if (closingRef.current) return;
     if (phase === 'closing' || phase === 'closed' || !active) return;
+    closingRef.current = true;
 
     // Cancel any in-flight navigation animations so their leftover
     // transforms / sizes don't compose with the card's close transform
@@ -285,6 +295,7 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
     }
 
     const finish = () => {
+      closingRef.current = false;
       setPhase('closed');
       setActive(null);
       onClose();

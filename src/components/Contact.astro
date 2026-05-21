@@ -5,7 +5,7 @@ const emailObfuscated = `${emailLocal} (at) ${emailDomain.replace('.', ' (dot) '
 const linkedin = 'https://www.linkedin.com/in/daniel-grant-a85683221/';
 const linkedinDisplay = 'linkedin.com/in/daniel-grant';
 const headingChars = [...'Contact'];
-const CASCADE_WINDOW_MS = 220;
+const CASCADE_WINDOW_MS = 1100;
 const headingStagger =
   headingChars.length > 1
     ? CASCADE_WINDOW_MS / (headingChars.length - 1)
@@ -76,7 +76,7 @@ const headingStagger =
   .contact__heading-reveal {
     display: inline-block;
     transform: translateY(120%);
-    animation: contactCharReveal 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: contactCharReveal 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes contactCharReveal {

@@ -45,12 +45,12 @@ const EAGER_COUNT = 3;
 // slide-up entrance. Beyond this they render at rest. 9 covers the
 // realistic above-fold tile count across viewports.
 const GALLERY_ENTRANCE_COUNT = 9;
-// Stagger ms between item entrances. Computed so the cascade
-// (N items - 1 staggers) fits in ~220ms — matches the cascade
-// window used for the header/intro/contact reveals so the whole
-// page entrance hits the 500ms total cap.
+// Stagger ms between item entrances. Computed so the cascade fits in
+// ~1100ms — matches the cascade window used for the header/intro/
+// contact reveals (animation 1400ms + cascade window 1100ms ≈ 2.5s
+// total, the slower pacing the user wanted).
 const GALLERY_STAGGER_MS =
-  GALLERY_ENTRANCE_COUNT > 1 ? 220 / (GALLERY_ENTRANCE_COUNT - 1) : 0;
+  GALLERY_ENTRANCE_COUNT > 1 ? 1100 / (GALLERY_ENTRANCE_COUNT - 1) : 0;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -642,7 +642,7 @@ const galleryStyles = `
   }
   .gallery__item--entrance .gallery__img {
     transform: translateY(120%);
-    animation: galleryImgEntrance 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: galleryImgEntrance 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes galleryImgEntrance {
