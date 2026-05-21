@@ -715,6 +715,7 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
         className="lb__close"
         ref={closeBtnRef}
         aria-label="Close"
+        data-cursor="link"
         onClick={(e) => {
           e.stopPropagation();
           close();

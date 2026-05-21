@@ -41,6 +41,11 @@ interface Props {
 // count across viewports; loading more competes with the LCP image
 // for bandwidth without making subsequent tiles visible any sooner.
 const EAGER_COUNT = 3;
+// Number of items at the top of the gallery that get the staggered
+// slide-up entrance. Beyond this they render at rest. ~6 covers the
+// realistic above-fold tile count across viewports without dragging
+// the cascade out longer than feels intentional.
+const GALLERY_ENTRANCE_COUNT = 6;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -191,12 +196,10 @@ function PhotoAlbumBlock({
   photos,
   globalIndexBase,
   onPick,
-  hiddenKey,
 }: {
   photos: readonly GalleryPhoto[];
   globalIndexBase: number;
   onPick: (p: GalleryPhoto, target: HTMLElement, globalIndex: number) => void;
-  hiddenKey: string | null;
 }) {
   return (
     <div className="gallery__inner">
@@ -212,19 +215,20 @@ function PhotoAlbumBlock({
             const p = ctx.photo as GalleryPhoto;
             const globalIdx = globalIndexBase + ctx.index;
             const eager = globalIdx < EAGER_COUNT;
-            const isHidden = hiddenKey === p.key;
             const srcSet = (p.srcSet ?? [])
               .map((v) => `${v.src} ${v.width}w`)
               .join(', ');
             const alt = altText(p);
             return (
               <a
-                className="gallery__item"
+                className={`gallery__item${
+                  globalIdx < GALLERY_ENTRANCE_COUNT ? ' gallery__item--entrance' : ''
+                }`}
                 data-photo-key={p.key}
+                data-cursor="photo"
+                data-cursor-label={`View · ${String(globalIdx + 1).padStart(2, '0')}`}
                 href={p.fullSrc}
                 aria-label={alt}
-                aria-hidden={isHidden || undefined}
-                tabIndex={isHidden ? -1 : undefined}
                 style={{
                   display: 'block',
                   width: ctx.width,
@@ -232,7 +236,9 @@ function PhotoAlbumBlock({
                   backgroundImage: `url(${p.lqip})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  visibility: isHidden ? 'hidden' : 'visible',
+                  // Staggered slide-up cascade for the first N items;
+                  // CSS reads --i to compute animation-delay.
+                  ['--i' as string]: globalIdx,
                 }}
                 onClick={(e) => {
                   e.preventDefault();
@@ -278,9 +284,40 @@ function PhotoAlbumBlock({
   );
 }
 
+// Imperative thumb-hide: avoids the React state path that would
+// re-render every PhotoAlbumBlock (and RowsPhotoAlbum's row layout)
+// each open/close/nav. We toggle visibility + a11y attributes by
+// querying the data-photo-key directly. React doesn't manage the
+// `visibility` style or these a11y attributes (they're not in JSX),
+// so its reconciliation can't fight our imperative writes.
+function setHiddenThumb(prevKey: string | null, nextKey: string | null): void {
+  if (prevKey && prevKey !== nextKey) {
+    const el = document.querySelector<HTMLElement>(
+      `[data-photo-key="${CSS.escape(prevKey)}"]`,
+    );
+    if (el) {
+      el.style.visibility = '';
+      el.removeAttribute('aria-hidden');
+      el.removeAttribute('tabindex');
+    }
+  }
+  if (nextKey && nextKey !== prevKey) {
+    const el = document.querySelector<HTMLElement>(
+      `[data-photo-key="${CSS.escape(nextKey)}"]`,
+    );
+    if (el) {
+      el.style.visibility = 'hidden';
+      el.setAttribute('aria-hidden', 'true');
+      el.setAttribute('tabindex', '-1');
+    }
+  }
+}
+
 export default function Gallery({ wildlife, misc }: Props) {
   const [lbState, setLbState] = useState<LightboxState | null>(null);
-  const [hiddenKey, setHiddenKey] = useState<string | null>(null);
+  // Tracks the currently-hidden thumb key without participating in
+  // React state — see setHiddenThumb above.
+  const hiddenKeyRef = useRef<string | null>(null);
 
   // One flat ordered list of every photo the lightbox can show, in the
   // same order they appear visually (wildlife first, then misc). Arrow
@@ -311,7 +348,8 @@ export default function Gallery({ wildlife, misc }: Props) {
   const pick = useCallback(
     (p: GalleryPhoto, sourceEl: HTMLElement, globalIndex: number) => {
       const r = sourceEl.getBoundingClientRect();
-      setHiddenKey(p.key);
+      setHiddenThumb(hiddenKeyRef.current, p.key);
+      hiddenKeyRef.current = p.key;
       setLbState({
         photos: lightboxPhotos,
         index: globalIndex,
@@ -334,7 +372,8 @@ export default function Gallery({ wildlife, misc }: Props) {
       const node = document.querySelector<HTMLElement>(
         `[data-photo-key="${CSS.escape(newPhoto.key)}"]`,
       );
-      setHiddenKey(newPhoto.key);
+      setHiddenThumb(hiddenKeyRef.current, newPhoto.key);
+      hiddenKeyRef.current = newPhoto.key;
       const prev = lbStateRef.current;
       if (!prev) return;
       if (!node) {
@@ -403,8 +442,9 @@ export default function Gallery({ wildlife, misc }: Props) {
   );
 
   const close = useCallback(() => {
+    setHiddenThumb(hiddenKeyRef.current, null);
+    hiddenKeyRef.current = null;
     setLbState(null);
-    setHiddenKey(null);
   }, []);
 
   const sectionBlocks = useMemo(() => {
@@ -416,7 +456,6 @@ export default function Gallery({ wildlife, misc }: Props) {
           photos={wildlife}
           globalIndexBase={0}
           onPick={pick}
-          hiddenKey={hiddenKey}
         />,
       );
     }
@@ -438,12 +477,11 @@ export default function Gallery({ wildlife, misc }: Props) {
           photos={misc}
           globalIndexBase={wildlife.length}
           onPick={pick}
-          hiddenKey={hiddenKey}
         />,
       );
     }
     return blocks;
-  }, [wildlife, misc, pick, hiddenKey]);
+  }, [wildlife, misc, pick]);
 
   if (wildlife.length === 0 && misc.length === 0) {
     return (
@@ -544,6 +582,21 @@ const galleryStyles = `
     object-fit: cover;
   }
   .gallery__img.is-loaded { opacity: 1; }
+
+  /* Mask + slide-up entrance for the first row of thumbs — same
+     pattern as the header name, applied to .gallery__img inside the
+     already-overflow-hidden .gallery__item. --i (set inline per item
+     from globalIdx) drives a staggered cascade so the row reads
+     left-to-right. Items beyond GALLERY_ENTRANCE_COUNT don't carry the
+     class and start at rest. */
+  .gallery__item--entrance .gallery__img {
+    transform: translateY(120%);
+    animation: galleryImgEntrance 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+  @keyframes galleryImgEntrance {
+    to { transform: translateY(0); }
+  }
   @media (hover: hover) {
     .gallery__item:hover {
       box-shadow: 0 18px 38px -22px rgba(20, 20, 18, 0.35);
@@ -557,6 +610,7 @@ const galleryStyles = `
     .gallery__img {
       transform: none !important;
       transition: opacity 80ms linear !important;
+      animation: none !important;
     }
   }
   @media (max-width: 600px) {

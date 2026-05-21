@@ -1,0 +1,196 @@
+---
+---
+
+<div class="cursor" aria-hidden="true">
+  <div class="cursor__ring"><span class="cursor__ring-label"></span></div>
+  <div class="cursor__dot"></div>
+</div>
+
+<style>
+  /* Two layers — a tight dot that's pinned to the cursor every
+     pointermove, and a larger ring that chases via a rAF spring so it
+     lags a few frames behind. The lag is the "magnetic" feel. Both
+     blend via difference so they stay legible against cream OR a
+     photograph without changing colour values. */
+  .cursor {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    /* Hidden until the script has positioned the layers at least
+       once; otherwise both elements flash at 0,0 on first paint. */
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .cursor.is-active { opacity: 1; }
+
+  .cursor__dot,
+  .cursor__ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    border-radius: 999px;
+    mix-blend-mode: difference;
+    /* Translate values are written by JS — keep the centering
+       translate combined so JS doesn't have to recompute it. */
+    will-change: transform;
+  }
+
+  .cursor__dot {
+    width: 7px;
+    height: 7px;
+    background: #f5f3ec;
+    transform: translate(-50%, -50%);
+  }
+
+  .cursor__ring {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #f5f3ec;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    transition:
+      width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      height 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 200ms ease,
+      background-color 200ms ease;
+  }
+
+  .cursor__ring[data-kind='link'] {
+    width: 48px;
+    height: 48px;
+  }
+
+  .cursor__ring[data-kind='photo'] {
+    width: 84px;
+    height: 84px;
+    background: rgba(245, 243, 236, 0.06);
+  }
+
+  .cursor__ring-label {
+    font-family: var(--font-serif, ui-serif);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #f5f3ec;
+    opacity: 0;
+    transform: translateY(1px);
+    transition: opacity 220ms ease 60ms;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .cursor__ring[data-kind='photo'] .cursor__ring-label {
+    opacity: 1;
+  }
+
+  /* Hide the system cursor everywhere once the custom cursor is on.
+     Body opts in by gaining the class once JS has confirmed this is a
+     fine-pointer device. */
+  body.has-magnetic-cursor,
+  body.has-magnetic-cursor * {
+    cursor: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor { display: none; }
+    body.has-magnetic-cursor,
+    body.has-magnetic-cursor * {
+      cursor: auto !important;
+    }
+  }
+</style>
+
+<script>
+  // Magnetic cursor — fine-pointer devices only. Touch / coarse-pointer
+  // devices fall back to no custom cursor (system pointer if any, or
+  // nothing on phones).
+  if (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    const root = document.querySelector('.cursor') as HTMLDivElement | null;
+    const dot = root?.querySelector('.cursor__dot') as HTMLDivElement | null;
+    const ring = root?.querySelector('.cursor__ring') as HTMLDivElement | null;
+    const ringLabel = root?.querySelector('.cursor__ring-label') as HTMLSpanElement | null;
+
+    if (root && dot && ring && ringLabel) {
+      document.body.classList.add('has-magnetic-cursor');
+
+      // Position state lives in plain locals (NOT React state) so the
+      // 120Hz pointermove path never triggers a render. tx/ty is the
+      // current target (pinned to the actual cursor); rx/ry is where
+      // the ring currently is, chasing toward tx/ty.
+      const s = {
+        tx: window.innerWidth / 2,
+        ty: window.innerHeight / 2,
+        rx: window.innerWidth / 2,
+        ry: window.innerHeight / 2,
+        active: false,
+      };
+
+      const SPRING = 0.18; // higher = tighter follow, 0.15–0.20 sweet spot
+
+      const onPointerMove = (e: PointerEvent) => {
+        s.tx = e.clientX;
+        s.ty = e.clientY;
+        // Dot: pinned to the cursor, written synchronously.
+        dot.style.transform = `translate(${s.tx}px, ${s.ty}px) translate(-50%, -50%)`;
+        if (!s.active) {
+          // First move — sync ring to dot so it doesn't sweep in from
+          // the corner, then reveal the cursor.
+          s.rx = s.tx;
+          s.ry = s.ty;
+          s.active = true;
+          root.classList.add('is-active');
+        }
+      };
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+
+      window.addEventListener('pointerleave', () => {
+        root.classList.remove('is-active');
+      });
+      window.addEventListener('pointerenter', () => {
+        if (s.active) root.classList.add('is-active');
+      });
+
+      // Hover state — the ring blooms and a label appears when over
+      // an element marked with data-cursor. data-cursor-label sets
+      // the text inside the ring.
+      const onPointerOver = (e: PointerEvent) => {
+        const t = (e.target as Element | null)?.closest('[data-cursor]') as HTMLElement | null;
+        if (t) {
+          ring.dataset.kind = t.dataset.cursor ?? '';
+          ringLabel.textContent = t.dataset.cursorLabel ?? '';
+        } else {
+          ring.removeAttribute('data-kind');
+          ringLabel.textContent = '';
+        }
+      };
+      window.addEventListener('pointerover', onPointerOver);
+
+      // Ring chases target via simple spring. requestAnimationFrame
+      // ensures the work happens once per paint; transform-only writes
+      // mean the browser composites this on the GPU.
+      let raf = 0;
+      const tick = () => {
+        s.rx += (s.tx - s.rx) * SPRING;
+        s.ry += (s.ty - s.ry) * SPRING;
+        ring.style.transform = `translate(${s.rx.toFixed(2)}px, ${s.ry.toFixed(2)}px) translate(-50%, -50%)`;
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+
+      // Astro view-transitions / bfcache safety — stop the loop if the
+      // page is being unloaded.
+      window.addEventListener('pagehide', () => {
+        cancelAnimationFrame(raf);
+        document.body.classList.remove('has-magnetic-cursor');
+      });
+    }
+  }
+</script>

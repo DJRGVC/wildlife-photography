@@ -5,9 +5,13 @@ const name = 'Daniel Grant';
 <div id="header-sentinel" aria-hidden="true"></div>
 <header id="site-header" class="site-header">
   <div class="site-header__inner">
-    <a href="#top" class="site-header__name">{name}</a>
+    <a href="#top" class="site-header__name" data-cursor="link">
+      <span class="site-header__name-mask"
+        ><span class="site-header__name-reveal">{name}</span></span
+      >
+    </a>
     <nav class="site-header__nav" aria-label="Primary">
-      <a href="#contact">Contact</a>
+      <a href="#contact" data-cursor="link">Contact</a>
     </nav>
   </div>
 </header>
@@ -63,6 +67,25 @@ const name = 'Daniel Grant';
     text-decoration: none;
   }
 
+  /* Mask + slide-up reveal. The outer span clips a single line height;
+     the inner span starts pushed below the clip and animates to its
+     rest position. translateY(120%) gives a brief fully-hidden beat
+     before the letters poke out, so the entrance feels intentional. */
+  .site-header__name-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    line-height: 1.05;
+  }
+  .site-header__name-reveal {
+    display: inline-block;
+    transform: translateY(120%);
+    animation: nameReveal 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  @keyframes nameReveal {
+    to { transform: translateY(0); }
+  }
+
   .site-header__nav {
     display: flex;
     align-items: center;
@@ -100,6 +123,13 @@ const name = 'Daniel Grant';
     }
     .site-header__nav a {
       font-size: 15px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header__name-reveal {
+      transform: none;
+      animation: none;
     }
   }
 </style>

@@ -2,11 +2,19 @@
 ---
 
 <section class="intro">
-  <p>
-    Occasionally, I venture outdoors and point my camera at things&mdash;often
-    animals, but not exclusively.
+  <p class="intro__line">
+    <span class="intro__line-mask"
+      ><span class="intro__line-reveal"
+        >Occasionally, I venture outdoors and point my camera at things&mdash;often
+        animals, but not exclusively.</span
+      ></span
+    >
   </p>
-  <p>Enjoy a selection of my favorites below.</p>
+  <p class="intro__line intro__line--delay">
+    <span class="intro__line-mask"
+      ><span class="intro__line-reveal">Enjoy a selection of my favorites below.</span></span
+    >
+  </p>
 </section>
 
 <style>
@@ -29,6 +37,37 @@
 
   .intro p + p {
     margin-top: 1.6em;
+  }
+
+  /* Mask + slide-up reveal, same pattern as the header name —
+     overflow-hidden block clip; inner span pushed below and animated
+     back to rest. Wrapping a multi-line paragraph in a single mask
+     means the whole copy block emerges as one (no per-line cascade);
+     the second paragraph picks up after a beat via animation-delay
+     so the eye reads through them in sequence. */
+  .intro__line { overflow: hidden; }
+  .intro__line-mask {
+    display: block;
+    overflow: hidden;
+  }
+  .intro__line-reveal {
+    display: block;
+    transform: translateY(120%);
+    animation: introReveal 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: 0.18s;
+  }
+  .intro__line--delay .intro__line-reveal {
+    animation-delay: 0.36s;
+  }
+  @keyframes introReveal {
+    to { transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .intro__line-reveal {
+      transform: none;
+      animation: none;
+    }
   }
 
   /* When the viewport is narrower than the gallery container can stay full
