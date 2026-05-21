@@ -122,9 +122,15 @@ function formatDate(iso: string): string {
 }
 
 async function buildLqip(buffer: Buffer): Promise<string> {
+  // mozjpeg + a tiny 12px-wide source gives a usable backdrop colour
+  // map at minimum byte cost. JPEG header overhead dominates at this
+  // size, so further reduction of the pixel grid has little effect;
+  // mozjpeg's better Huffman tables get most of the win. The LQIP is
+  // rendered as a CSS background and only visible briefly while the
+  // real image decodes, so the lower fidelity isn't noticeable.
   const lqip = await sharp(buffer)
-    .resize(20, null, { fit: 'inside' })
-    .jpeg({ quality: 40 })
+    .resize(12, null, { fit: 'inside' })
+    .jpeg({ quality: 25, mozjpeg: true })
     .toBuffer();
   return `data:image/jpeg;base64,${lqip.toString('base64')}`;
 }

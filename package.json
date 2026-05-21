@@ -24,31 +24,29 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.97.1",
     "@astrojs/react": "^5.0.5",
-    "@aws-sdk/client-s3": "^3.1048.0",
     "@tailwindcss/vite": "^4.3.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro": "^6.3.5",
-    "busboy": "^1.6.0",
-    "exifreader": "^4.39.0",
     "lenis": "^1.3.23",
-    "mime-types": "^3.0.2",
-    "photoswipe": "^5.4.4",
-    "photoswipe-dynamic-caption-plugin": "^1.2.7",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-photo-album": "^3.6.0",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.97.1",
     "@astrojs/check": "^0.9.9",
+    "@aws-sdk/client-s3": "^3.1048.0",
     "@types/busboy": "^1.5.4",
     "@types/mime-types": "^3.0.1",
     "@types/node": "^25.9.0",
+    "busboy": "^1.6.0",
     "chokidar": "^5.0.0",
     "concurrently": "^9.2.1",
+    "exifreader": "^4.39.0",
+    "mime-types": "^3.0.2",
     "tsx": "^4.22.2",
     "typescript": "^6.0.3"
   }

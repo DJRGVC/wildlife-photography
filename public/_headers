@@ -1,0 +1,22 @@
+# Cloudflare Pages applies these headers to matching responses.
+#
+# /_astro/* assets have content-hashed filenames (e.g. foo.PPCEFQl5.jpeg),
+# so any change to the file produces a new URL — they can be cached
+# essentially forever. Browsers won't re-download an unchanged photo
+# on repeat visits.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Favicons + static assets in public/ aren't content-hashed; cache them
+# for a day with revalidation as a sensible default.
+/favicon.svg
+  Cache-Control: public, max-age=86400
+/favicon.ico
+  Cache-Control: public, max-age=86400
+/favicon-256.png
+  Cache-Control: public, max-age=86400
+
+# HTML must revalidate so the document picks up new bundle URLs after
+# a deploy. Cache briefly at the edge / short-lived in the browser.
+/*
+  Cache-Control: public, max-age=0, must-revalidate

@@ -96,6 +96,9 @@
   justify-content: center;
   padding: 32px;
   overflow: hidden;
+  /* Suppress browser-native swipe gestures (iOS back-swipe, pinch-zoom)
+     so they don't compete with our horizontal swipe nav. */
+  touch-action: none;
 }
 .lb__bg {
   position: absolute;

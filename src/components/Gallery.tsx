@@ -36,7 +36,11 @@ interface Props {
   misc: readonly GalleryPhoto[];
 }
 
-const EAGER_COUNT = 6;
+// Number of gallery thumbs to load eagerly (no lazy-loading attr) and
+// render at high fetchpriority. 3 covers the realistic above-fold tile
+// count across viewports; loading more competes with the LCP image
+// for bandwidth without making subsequent tiles visible any sooner.
+const EAGER_COUNT = 3;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -81,9 +85,19 @@ function renderCaption(p: GalleryPhoto, showAnimal: boolean): string {
   return parts.join('');
 }
 
+// Cache of thumb rects, populated on mouseenter and cleared on
+// mouseleave. Without this, handleTilt would call
+// getBoundingClientRect() on every mousemove (~60×/s/tile), forcing
+// a layout read and stalling the main thread under the cursor.
+const tiltRectCache = new WeakMap<HTMLElement, DOMRect>();
+
+function handleTiltEnter(e: React.MouseEvent<HTMLAnchorElement>): void {
+  tiltRectCache.set(e.currentTarget, e.currentTarget.getBoundingClientRect());
+}
+
 function handleTilt(e: React.MouseEvent<HTMLAnchorElement>): void {
   const el = e.currentTarget;
-  const rect = el.getBoundingClientRect();
+  const rect = tiltRectCache.get(el) ?? el.getBoundingClientRect();
   const px = (e.clientX - rect.left) / rect.width;
   const py = (e.clientY - rect.top) / rect.height;
   const ry = (px - 0.5) * 5;
@@ -96,6 +110,7 @@ function resetTilt(e: React.MouseEvent<HTMLAnchorElement>): void {
   const el = e.currentTarget;
   el.style.setProperty('--tilt-x', '0deg');
   el.style.setProperty('--tilt-y', '0deg');
+  tiltRectCache.delete(el);
 }
 
 function handleImgLoad(e: React.SyntheticEvent<HTMLImageElement>): void {
@@ -223,7 +238,10 @@ function PhotoAlbumBlock({
                   e.preventDefault();
                   onPick(p, e.currentTarget, globalIdx);
                 }}
-                onMouseEnter={() => preloadLightboxImage(p)}
+                onMouseEnter={(e) => {
+                  handleTiltEnter(e);
+                  preloadLightboxImage(p);
+                }}
                 onFocus={() => preloadLightboxImage(p)}
                 // Mobile equivalent of hover-preload: kick off the
                 // fullSrc fetch + decode as soon as the finger lands,

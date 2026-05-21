@@ -136,6 +136,10 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
   // reference until the next nav prevents the browser from dropping
   // the decoded bitmap before the user actually arrows to it.
   const preloadRef = useRef<HTMLImageElement[]>([]);
+  // Tracks the (photos, index) we last preloaded for so quick
+  // back-and-forth nav doesn't re-fire Image() constructors for the
+  // same neighbors.
+  const preloadKeyRef = useRef<{ photos: readonly LightboxPhoto[]; index: number } | null>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -472,16 +476,28 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
     cardAnim.finished.then(() => setPhase('open')).catch(() => {});
   }, [phase, active]);
 
+  // Latest close/navigate handlers held in refs so the open/close
+  // effect below can depend on `active` alone. Without this, both
+  // useCallbacks change reference on every phase transition and every
+  // state-prop update from Gallery (each arrow nav refreshes fromRect),
+  // tearing down + re-establishing the document keydown listener and
+  // re-running lenis.stop() + body.overflow writes on every render
+  // while the lightbox is open.
+  const latestCloseRef = useRef(close);
+  const latestNavigateRef = useRef(navigate);
+  latestCloseRef.current = close;
+  latestNavigateRef.current = navigate;
+
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') latestCloseRef.current();
       else if (e.key === 'ArrowRight') {
         e.preventDefault();
-        navigate(1);
+        latestNavigateRef.current(1);
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        navigate(-1);
+        latestNavigateRef.current(-1);
       }
     };
     document.addEventListener('keydown', onKey);
@@ -497,7 +513,7 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
       document.body.style.overflow = prevOverflow;
       lenis?.start();
     };
-  }, [active, close, navigate]);
+  }, [active]);
 
   // Preload to support the progressive-loading scheme:
   //   - Current photo's full-res, so the "settle to fullSrc" swap
@@ -517,6 +533,16 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
   // the user navigates.
   useEffect(() => {
     if (!active) return;
+    // Skip if we already preloaded neighbors for this exact (photos,
+    // index). Active's identity changes on every nav even when the
+    // user navigates back to where they were, so without this guard
+    // we'd re-fire Image() decode() for already-cached neighbors.
+    const prevKey = preloadKeyRef.current;
+    if (prevKey && prevKey.photos === active.photos && prevKey.index === active.index) {
+      return;
+    }
+    preloadKeyRef.current = { photos: active.photos, index: active.index };
+
     const preloadImage = (
       src: string,
       srcset: string | undefined,
@@ -608,9 +634,6 @@ export default function Lightbox({ state, onClose, onIndexChange }: Props) {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       onTouchCancel={onTouchCancel}
-      // Disable browser-native swipe gestures (back-swipe, pinch-zoom)
-      // so they don't compete with our horizontal swipe nav.
-      style={{ touchAction: 'none' }}
     >
       <div className="lb__bg" ref={bgRef} aria-hidden="true" />
       <div
