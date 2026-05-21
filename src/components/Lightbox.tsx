@@ -742,6 +742,7 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
             alt={photo.alt}
             draggable={false}
             fetchPriority="high"
+            decoding="async"
             style={
               photo.lqip
                 ? {

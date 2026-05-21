@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   RowsPhotoAlbum,
   type Photo,
@@ -347,6 +347,49 @@ export default function Gallery({ wildlife, misc }: Props) {
   // current state without re-creating its callback on every nav.
   const lbStateRef = useRef<LightboxState | null>(null);
   lbStateRef.current = lbState;
+  // Eagerly preload + decode fullSrc for the top N photos on page-
+  // load idle. The user reports that the FIRST click of the session
+  // lags (close FLIP teleports, swap stutters), then subsequent
+  // opens/navs feel fine — and that waiting 3-5 seconds after the
+  // first click also makes the close smooth. That pattern is JPEG
+  // decoding blocking the main thread: a 5-15MB byte-for-byte
+  // original takes a couple hundred ms to decode the first time,
+  // and that decode work spills into whatever animation is running
+  // when the user clicks/navigates. Pre-decoding at idle warms the
+  // decoded-image cache so the bitmap is already ready by the time
+  // an animation needs it.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const photos = [...wildlife, ...misc].slice(0, 12);
+    if (photos.length === 0) return;
+
+    const refs: HTMLImageElement[] = [];
+    const win = window as Window & {
+      requestIdleCallback?: (cb: IdleRequestCallback, opts?: { timeout?: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const schedule = win.requestIdleCallback ?? ((cb) => window.setTimeout(cb, 200));
+    const cancel = win.cancelIdleCallback ?? window.clearTimeout;
+
+    let handle: number | null = null;
+    let cancelled = false;
+    handle = schedule(() => {
+      if (cancelled) return;
+      for (const p of photos) {
+        const im = new Image();
+        im.fetchPriority = 'low';
+        im.src = p.fullSrc;
+        im.decode().catch(() => {});
+        refs.push(im);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      if (handle !== null) cancel(handle);
+    };
+  }, [wildlife, misc]);
+
   // RAF id of the in-flight smooth-scroll, so a fast second nav can
   // cancel the previous animation before starting a new one.
   const scrollRafRef = useRef<number | null>(null);
