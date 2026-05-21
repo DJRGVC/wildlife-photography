@@ -399,16 +399,6 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
       touchStartRef.current = null;
       return;
     }
-    // Don't track for swipe-nav while the viewport is pinch-zoomed —
-    // the user is panning the zoomed image, not requesting nav.
-    if (
-      typeof window !== 'undefined' &&
-      window.visualViewport &&
-      window.visualViewport.scale > 1.01
-    ) {
-      touchStartRef.current = null;
-      return;
-    }
     const t = e.touches[0];
     touchStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
   }, []);
@@ -452,11 +442,13 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
     };
     oldImg.animate([{ opacity: 1 }, { opacity: 0 }], opts);
     newImg.animate([{ opacity: 0 }, { opacity: 1 }], opts);
-    // Caption text swaps instantly (React already committed it) —
-    // no opacity animation. Previously a 0.5 → 1 fade was running
-    // here too; removing it drops one concurrent WAAPI animation
-    // per swap with no perceptible visual difference (the eye is
-    // tracking the morphing image, not text).
+    // navigate() cancelled the caption's prior WAAPI animation
+    // (which was holding opacity:1 via fill:'both'), so without
+    // *some* animation here the caption returns to its CSS default
+    // of opacity:0 and stays invisible. Use a 0.5 → 1 fade with
+    // fill:'both' to both restore opacity and provide a subtle
+    // text settle. Cheap; opacity is GPU-composited.
+    newCap?.animate([{ opacity: 0.5 }, { opacity: 1 }], opts);
   }, [outgoing]);
 
   // useLayoutEffect (not useEffect) so the WAAPI animations are applied

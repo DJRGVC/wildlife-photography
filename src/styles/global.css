@@ -169,35 +169,11 @@
   -webkit-backdrop-filter: none !important;
 }
 
-/* During the close FLIP and the morph swap, also strip the small
-   backdrop-filters and shadows on the close button and nav arrows.
-   Three small blurred-button layers + the card-bg shadow re-rasterize
-   each frame for a near-imperceptible visual contribution while the
-   image is moving. Pattern matches the existing :has(.lb__img--outgoing)
-   approach already used for card-bg during swap. */
-.lb--closing .lb__close,
-.lb--closing .lb__nav,
-.lb__card:has(.lb__img--outgoing) .lb__close,
-.lb__card:has(.lb__img--outgoing) .lb__nav {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none;
-}
-
-/* Site-header sits behind the lightbox at z-index 50 (lightbox is
-   100). When .lb__bg fades 1 → 0 during close, the header becomes
-   visible underneath — and its own backdrop-filter + mask-image
-   recompute each frame against the changing background. Suppress
-   them while any lightbox animation is running; the header is
-   already faded out (--header-opacity ≈ 0) past initial scroll, and
-   even at full opacity the difference for ~520ms of animation is
-   imperceptible vs the per-frame cost. */
-body.lb-animating .site-header {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
-}
+/* Earlier round tried suppressing backdrop-filter on .lb__close,
+   .lb__nav and the site-header during animations via class
+   toggling — but toggling backdrop-filter on/off forces compositor
+   layer rebuilds, which itself was MORE jank than the per-frame
+   recompute cost we hoped to save. Left out intentionally. */
 
 .lb__media {
   position: relative;
@@ -231,11 +207,6 @@ body.lb-animating .site-header {
      to its own layer so the GPU can blend them without the painter
      touching pixels of unaffected siblings. */
   will-change: opacity;
-  /* Allow native pinch-zoom + double-tap-zoom on the photo only.
-     The outer .lb keeps touch-action: none so swipe-nav fires on
-     touches outside the image; touch-action is honoured by the
-     touched element, so this scopes pinch to .lb__img specifically. */
-  touch-action: pinch-zoom;
 }
 .lb__img--outgoing {
   z-index: 1;
