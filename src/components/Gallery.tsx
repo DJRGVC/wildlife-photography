@@ -45,13 +45,11 @@ const EAGER_COUNT = 3;
 // slide-up entrance. Beyond this they render at rest. 9 covers the
 // realistic above-fold tile count across viewports.
 const GALLERY_ENTRANCE_COUNT = 9;
-// Fixed 30ms stagger between item entrances — each image starts 30ms
-// after the previous, so the cascade is tight at the front (~9 items
-// land in ~240ms of cascade window) while each individual slide takes
-// its time (400ms per image). Different from the text reveals where
-// the stagger is derived from the cascade window; here the user
-// asked for a fixed per-image rhythm regardless of count.
-const GALLERY_STAGGER_MS = 30;
+// Fixed 200ms stagger between item entrances — each image starts
+// 200ms after the previous, so the cascade reads as a visible wave
+// rolling through the row rather than all-at-once. Each individual
+// slide takes 1700ms (set in CSS below).
+const GALLERY_STAGGER_MS = 200;
 
 const escapeHtml = (raw: string): string =>
   raw
@@ -643,7 +641,7 @@ const galleryStyles = `
   }
   .gallery__item--entrance .gallery__img {
     transform: translateY(120%);
-    animation: galleryImgEntrance 2000ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: galleryImgEntrance 1700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
   }
   @keyframes galleryImgEntrance {
