@@ -209,6 +209,15 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
     // so the close FLIP doesn't aim at a thumb that's still moving.
     onCloseStart?.();
 
+    // Body class flag for any concurrent main-thread work elsewhere
+    // on the page (notably the magnetic cursor's pixel-sampling loop)
+    // to pause during the close FLIP. The cursor's drawImage +
+    // getImageData round-trip is small per call but it runs on the
+    // main thread alongside React's commit phase and competes for
+    // budget during the first few frames of close — exactly where
+    // dropped frames read as "the card teleporting toward the thumb".
+    document.body.classList.add('lb-animating');
+
     setPhase('closing');
 
     const card = cardRef.current;
@@ -290,6 +299,7 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
     }
 
     const finish = () => {
+      document.body.classList.remove('lb-animating');
       closingRef.current = false;
       setPhase('closed');
       setActive(null);

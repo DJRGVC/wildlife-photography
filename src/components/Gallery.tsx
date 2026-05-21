@@ -390,6 +390,75 @@ export default function Gallery({ wildlife, misc }: Props) {
     };
   }, [wildlife, misc]);
 
+  // Pre-warm the lightbox paint pipeline on page-load idle. The user
+  // sees the close FLIP lag the first 1-2 cycles, then any image is
+  // smooth — the pattern points to browser-side warmup: compositor
+  // layer allocation, V8 JIT of the lightbox CSS paths, paint-record
+  // caching for the .lb / .lb__card / .lb__media / .lb__img element
+  // tree. None of that happens during a passive page load; it
+  // happens only when the structure actually mounts and renders.
+  // Briefly creating and destroying a structurally-equivalent hidden
+  // div on page idle triggers the same setup, so the first real
+  // click opens against an already-warm pipeline.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const win = window as Window & {
+      requestIdleCallback?: (cb: IdleRequestCallback, opts?: { timeout?: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const schedule = win.requestIdleCallback ?? ((cb) => window.setTimeout(cb, 600));
+    const cancel = win.cancelIdleCallback ?? window.clearTimeout;
+
+    let handle: number | null = null;
+    let cleanupNode: (() => void) | null = null;
+
+    handle = schedule(() => {
+      const div = document.createElement('div');
+      div.setAttribute('aria-hidden', 'true');
+      div.style.cssText =
+        'position:fixed;inset:0;visibility:hidden;pointer-events:none;z-index:-1;';
+      // Match the .lb / .lb__card / .lb__media / .lb__img structure
+      // closely enough that the browser allocates the same compositor
+      // layers and runs the same paint paths.
+      div.innerHTML = `
+        <div class="lb lb--opening">
+          <div class="lb__bg"></div>
+          <div class="lb__card">
+            <div class="lb__card-bg"></div>
+            <div class="lb__media" style="width:600px;height:400px;">
+              <img class="lb__img" alt="" decoding="async" />
+            </div>
+            <div class="lb__caption"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(div);
+      // Force layout + initial paint so the browser actually allocates
+      // the layers (not just parses HTML).
+      void div.offsetHeight;
+
+      let frames = 0;
+      const tick = () => {
+        frames++;
+        if (frames >= 3) {
+          div.remove();
+        } else {
+          requestAnimationFrame(tick);
+        }
+      };
+      const rafId = requestAnimationFrame(tick);
+      cleanupNode = () => {
+        cancelAnimationFrame(rafId);
+        div.remove();
+      };
+    }, { timeout: 1500 });
+
+    return () => {
+      if (handle !== null) cancel(handle);
+      cleanupNode?.();
+    };
+  }, []);
+
   // RAF id of the in-flight smooth-scroll, so a fast second nav can
   // cancel the previous animation before starting a new one.
   const scrollRafRef = useRef<number | null>(null);
