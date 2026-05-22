@@ -1,57 +1,12 @@
 ---
-const para1 =
-  'Occasionally, I venture outdoors and point my camera at things—often animals, but not exclusively.';
-const para2 = 'Enjoy a selection of my favorites below.';
-const para1Chars = [...para1];
-const para2Chars = [...para2];
-
-// Animation = 900ms; cascade window = 700ms; total per cascade ≈ 1.6s.
-// Per-letter stagger is computed so the last letter starts at the end
-// of the cascade window regardless of paragraph length — the longer
-// the sentence, the faster the wave passes, but the total animation
-// fits the same overall envelope.
-const CASCADE_WINDOW_MS = 700;
-const stagger1 =
-  para1Chars.length > 1 ? CASCADE_WINDOW_MS / (para1Chars.length - 1) : 0;
-const stagger2 =
-  para2Chars.length > 1 ? CASCADE_WINDOW_MS / (para2Chars.length - 1) : 0;
 ---
 
 <section class="intro">
-  <p
-    class="intro__line"
-    aria-label={para1}
-    style={`--stagger-ms:${stagger1.toFixed(3)}ms`}
-  >
-    {
-      para1Chars.map((c, i) =>
-        c === ' ' ? (
-          ' '
-        ) : (
-          <span class="intro__char-mask" style={`--i:${i}`} aria-hidden="true">
-            <span class="intro__char-reveal">{c}</span>
-          </span>
-        ),
-      )
-    }
+  <p>
+    Occasionally, I venture outdoors and point my camera at things&mdash;often
+    animals, but not exclusively.
   </p>
-  <p
-    class="intro__line"
-    aria-label={para2}
-    style={`--stagger-ms:${stagger2.toFixed(3)}ms`}
-  >
-    {
-      para2Chars.map((c, i) =>
-        c === ' ' ? (
-          ' '
-        ) : (
-          <span class="intro__char-mask" style={`--i:${i}`} aria-hidden="true">
-            <span class="intro__char-reveal">{c}</span>
-          </span>
-        ),
-      )
-    }
-  </p>
+  <p>Enjoy a selection of my favorites below.</p>
 </section>
 
 <style>
@@ -74,37 +29,6 @@ const stagger2 =
 
   .intro p + p {
     margin-top: 1.6em;
-  }
-
-  /* Per-letter mask + slide-up reveal. Each character is its own
-     overflow-hidden inline-block clip; the inner span starts pushed
-     below at translateY(120%) and slides to rest. --i (set inline
-     per letter) and --stagger-ms (set inline on the paragraph,
-     computed to fit the whole cascade in ~220ms regardless of
-     length) together drive a left-to-right wave that fits inside the
-     500ms total budget. Spaces between words are kept as plain text
-     nodes so the line breaks naturally on wrap. */
-  .intro__char-mask {
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: bottom;
-    line-height: inherit;
-  }
-  .intro__char-reveal {
-    display: inline-block;
-    transform: translateY(120%);
-    animation: introCharReveal 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    animation-delay: calc(var(--i, 0) * var(--stagger-ms, 0ms));
-  }
-  @keyframes introCharReveal {
-    to { transform: translateY(0); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .intro__char-reveal {
-      transform: none;
-      animation: none;
-    }
   }
 
   /* When the viewport is narrower than the gallery container can stay full

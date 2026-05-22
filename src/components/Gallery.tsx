@@ -229,8 +229,6 @@ function PhotoAlbumBlock({
                   globalIdx < GALLERY_ENTRANCE_COUNT ? ' gallery__item--entrance' : ''
                 }`}
                 data-photo-key={p.key}
-                data-cursor="photo"
-                data-cursor-label="View"
                 href={p.fullSrc}
                 aria-label={alt}
                 style={{
@@ -758,7 +756,10 @@ const galleryStyles = `
     display: block;
     overflow: hidden;
     text-decoration: none;
-    cursor: pointer;
+    /* Magnifying-glass cursor on thumbnails — clear affordance that
+       clicking opens the photo. No custom JS cursor; the system
+       cursor stays everywhere else. */
+    cursor: zoom-in;
     border-radius: 6px;
     transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     transform-style: preserve-3d;

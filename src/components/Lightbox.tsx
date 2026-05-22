@@ -800,7 +800,6 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
         className="lb__close"
         ref={closeBtnRef}
         aria-label="Close"
-        data-cursor="link"
         onClick={(e) => {
           e.stopPropagation();
           close();
@@ -820,7 +819,6 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
         type="button"
         className="lb__nav lb__nav--prev"
         aria-label="Previous photo"
-        data-cursor="link"
         disabled={active.index === 0}
         onClick={(e) => {
           e.stopPropagation();
@@ -842,7 +840,6 @@ export default function Lightbox({ state, onClose, onIndexChange, onCloseStart }
         type="button"
         className="lb__nav lb__nav--next"
         aria-label="Next photo"
-        data-cursor="link"
         disabled={active.index === active.photos.length - 1}
         onClick={(e) => {
           e.stopPropagation();
