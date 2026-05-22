@@ -360,7 +360,19 @@ export default function Gallery({ wildlife, misc }: Props) {
   // an animation needs it.
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const photos = [...wildlife, ...misc].slice(0, 12);
+    // Cap the eager preload count tightly on touch devices. iPhone
+    // Safari has a ~250 MiB per-tab memory budget; pre-decoding 12
+    // full-res originals at 5-15 MiB each was pushing the page into
+    // the "A problem repeatedly occurred" auto-reload loop. Touch
+    // devices fall back to the cheaper hover/touchstart preload for
+    // any thumb past the first two — still removes the cold-decode
+    // hit on the very first click without holding tens of MiB of
+    // decoded bitmaps in memory.
+    const isTouch =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches;
+    const PRELOAD_COUNT = isTouch ? 2 : 12;
+    const photos = [...wildlife, ...misc].slice(0, PRELOAD_COUNT);
     if (photos.length === 0) return;
 
     const refs: HTMLImageElement[] = [];
@@ -402,6 +414,17 @@ export default function Gallery({ wildlife, misc }: Props) {
   // click opens against an already-warm pipeline.
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    // Skip the pre-warm hidden mount on touch devices. It briefly
+    // allocates lightbox-shaped compositor layers + runs throwaway
+    // WAAPI animations, which on iPhone Safari was an unnecessary
+    // memory + GPU spike for a polish optimization mostly aimed at
+    // desktop close-FLIP frame budget.
+    if (
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches
+    ) {
+      return;
+    }
     const win = window as Window & {
       requestIdleCallback?: (cb: IdleRequestCallback, opts?: { timeout?: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
