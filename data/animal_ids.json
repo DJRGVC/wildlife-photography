@@ -1342,5 +1342,53 @@
     "animals": [],
     "confidence": "high",
     "notes": "Wake detail from the boat."
+  },
+  "20260524-_F9A1270.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20260524-_F9A1270.jpg",
+    "date": "2026-05-24",
+    "datetime": "2026:05:24 01:46:27",
+    "width": 5782,
+    "height": 3855,
+    "location": {
+      "name": ""
+    },
+    "scene": "Male American Goldfinch perched on a thistle head.",
+    "animals": [
+      {
+        "common_name": "American Goldfinch",
+        "scientific_name": "Spinus tristis",
+        "subject": "primary",
+        "notes": ""
+      }
+    ],
+    "confidence": "high",
+    "notes": "Breeding male; vivid yellow body, black forehead cap, black wings with white wingbars. Thistle is a favored foraging and nesting plant for this species."
+  },
+  "20260524-_F9A1026-2.jpg": {
+    "categories": [
+      "wildlife"
+    ],
+    "filename": "20260524-_F9A1026-2.jpg",
+    "date": "2026-05-24",
+    "datetime": "2026:05:24 00:57:21",
+    "width": 4715,
+    "height": 3143,
+    "location": {
+      "name": ""
+    },
+    "scene": "California Quail perched on a weathered wooden fence post.",
+    "animals": [
+      {
+        "common_name": "California Quail",
+        "scientific_name": "Callipepla californica",
+        "subject": "primary",
+        "notes": ""
+      }
+    ],
+    "confidence": "high",
+    "notes": "Female; muted brown-gray plumage, scaled belly, short forward-curling topknot — less pronounced than the male's teardrop plume. Scalloped flanks and streaked breast typical of hen."
   }
 }

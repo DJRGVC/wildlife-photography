@@ -52,7 +52,7 @@ type Decisions = Record<string, 'keep' | 'reject'>;
 
 const thumbCache = new Map<string, Buffer>();
 let rebuildTimer: NodeJS.Timeout | null = null;
-let uploadLock: Promise<unknown> = Promise.resolve();
+let writeLock: Promise<unknown> = Promise.resolve();
 
 async function loadDotEnv(): Promise<void> {
   if (process.env.ANTHROPIC_API_KEY) return;
@@ -231,6 +231,60 @@ async function stripGps(filePath: string): Promise<void> {
   }
 }
 
+type WildlifeExample = {
+  common_name: string;
+  scientific_name: string;
+  scene: string;
+  confidence: string;
+  notes: string;
+};
+type MiscExample = { scene: string; confidence: string; notes: string };
+
+const MAX_STYLE_EXAMPLES = 12;
+
+async function buildStyleExamples(section: Section): Promise<string> {
+  const data = await loadAnimalIds();
+  const sorted = Object.entries(data).sort(([a], [b]) => a.localeCompare(b));
+
+  if (section === 'wildlife') {
+    const seen = new Set<string>();
+    const samples: WildlifeExample[] = [];
+    for (const [, entry] of sorted) {
+      if (sectionOf(entry) !== 'wildlife') continue;
+      if (!entry.scene || entry.confidence !== 'high') continue;
+      const animals = entry.animals ?? [];
+      const primary = animals.find((a) => a.subject === 'primary') ?? animals[0];
+      if (!primary?.common_name) continue;
+      if (seen.has(primary.common_name)) continue;
+      seen.add(primary.common_name);
+      samples.push({
+        common_name: primary.common_name,
+        scientific_name: primary.scientific_name ?? '',
+        scene: entry.scene,
+        confidence: entry.confidence,
+        notes: primary.notes ?? entry.notes ?? '',
+      });
+      if (samples.length >= MAX_STYLE_EXAMPLES) break;
+    }
+    if (samples.length === 0) return '';
+    return samples.map((s) => JSON.stringify(s)).join('\n');
+  }
+
+  const samples: MiscExample[] = [];
+  for (const [, entry] of sorted) {
+    if (sectionOf(entry) !== 'misc') continue;
+    if (!entry.scene || entry.confidence !== 'high') continue;
+    samples.push({
+      scene: entry.scene,
+      confidence: entry.confidence,
+      notes: entry.notes ?? '',
+    });
+    if (samples.length >= MAX_STYLE_EXAMPLES) break;
+  }
+  if (samples.length === 0) return '';
+  return samples.map((s) => JSON.stringify(s)).join('\n');
+}
+
 async function classifyImage(buffer: Buffer, section: Section): Promise<{
   common_name?: string;
   scientific_name?: string;
@@ -249,6 +303,17 @@ async function classifyImage(buffer: Buffer, section: Section): Promise<{
 
   const system = section === 'wildlife' ? WILDLIFE_SYSTEM : MISC_SYSTEM;
   const schema = section === 'wildlife' ? WILDLIFE_SCHEMA : MISC_SCHEMA;
+  const examples = await buildStyleExamples(section);
+  const examplesText = examples
+    ? `Reference captions from this portfolio — match this tone, brevity, and level of specificity. Do not echo a scene verbatim; pattern your output on the style.\n\n${examples}`
+    : '';
+
+  const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
+    { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
+  ];
+  if (examplesText) {
+    systemBlocks.push({ type: 'text', text: examplesText, cache_control: { type: 'ephemeral' } });
+  }
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
@@ -258,9 +323,7 @@ async function classifyImage(buffer: Buffer, section: Section): Promise<{
       effort: 'low',
       format: { type: 'json_schema', schema },
     },
-    system: [
-      { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
-    ],
+    system: systemBlocks,
     messages: [
       {
         role: 'user',
@@ -341,13 +404,71 @@ function parseMultipart(req: http.IncomingMessage): Promise<{
   });
 }
 
-async function withUploadLock<T>(fn: () => Promise<T>): Promise<T> {
-  const next = uploadLock.then(fn, fn);
-  uploadLock = next.then(
+async function withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+  const next = writeLock.then(fn, fn);
+  writeLock = next.then(
     () => undefined,
     () => undefined,
   );
   return next;
+}
+
+function sectionOf(entry: PhotoEntry | undefined): Section | null {
+  const cat = entry?.categories?.[0];
+  return cat === 'wildlife' || cat === 'misc' ? cat : null;
+}
+
+async function applyClassification(
+  entry: PhotoEntry,
+  buffer: Buffer,
+  section: Section,
+): Promise<void> {
+  const ai = await classifyImage(buffer, section);
+  entry.scene = ai.scene;
+  entry.confidence = ai.confidence;
+  entry.notes = ai.notes || null;
+  if (section === 'wildlife' && ai.common_name) {
+    entry.animals = [
+      {
+        common_name: ai.common_name,
+        scientific_name: ai.scientific_name ?? '',
+        subject: 'primary',
+        notes: '',
+      },
+    ];
+  }
+}
+
+function isPending(entry: PhotoEntry): boolean {
+  return !entry.scene || entry.scene.trim() === '';
+}
+
+async function classifyPendingInBackground(): Promise<void> {
+  if (!anthropic) return;
+  const pending = Object.entries(await loadAnimalIds())
+    .filter(([, entry]) => sectionOf(entry) && isPending(entry))
+    .map(([filename, entry]) => ({ filename, section: sectionOf(entry) as Section }));
+
+  if (pending.length === 0) return;
+  console.log(`[edit-captions] classifying ${pending.length} pending photo(s) in background…`);
+
+  for (const { filename, section } of pending) {
+    try {
+      await withWriteLock(async () => {
+        const filePath = path.join(PHOTO_DIR, section, filename);
+        const buffer = await fs.readFile(filePath);
+        const data = await loadAnimalIds();
+        const entry = data[filename];
+        if (!entry || !isPending(entry)) return;
+        await applyClassification(entry, buffer, section);
+        await saveAnimalIds(data);
+        console.log(`[edit-captions]   ✓ ${filename}`);
+      });
+    } catch (err) {
+      console.warn(`[edit-captions]   ✗ ${filename}: ${(err as Error).message}`);
+    }
+  }
+  scheduleRebuild();
 }
 
 async function readBody(req: http.IncomingMessage): Promise<string> {
@@ -607,6 +728,65 @@ const HTML = `<!doctype html>
     .save-status.saving { color: var(--ink-soft); }
     .save-status.saved { color: var(--accent); }
     .save-status.error { color: var(--danger); }
+
+    .photo__actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .photo__actions button {
+      padding: 5px 12px;
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 12px;
+      color: var(--ink);
+      transition: background 120ms, border-color 120ms, color 120ms;
+    }
+    .photo__actions button:hover {
+      border-color: var(--ink-soft);
+    }
+    .photo__actions button:disabled {
+      opacity: 0.5;
+      cursor: progress;
+    }
+    .photo__actions .btn-reclassify:hover {
+      background: color-mix(in srgb, var(--accent) 10%, white);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .photo__actions .btn-delete:hover {
+      background: color-mix(in srgb, var(--danger) 10%, white);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .photo__actions .action-status {
+      font-size: 11.5px;
+      color: var(--ink-faint);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      min-height: 14px;
+    }
+    .photo__actions .action-status.busy { color: var(--ink-soft); }
+    .photo__actions .action-status.ok { color: var(--accent); }
+    .photo__actions .action-status.err { color: var(--danger); }
+    .pending-tag {
+      padding: 1px 8px;
+      background: color-mix(in srgb, var(--warn) 18%, transparent);
+      border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+      border-radius: 999px;
+      font-size: 10.5px;
+      color: color-mix(in srgb, var(--warn) 60%, var(--ink));
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .empty {
       text-align: center;
       color: var(--ink-faint);
@@ -702,6 +882,7 @@ const HTML = `<!doctype html>
         const section = (entry.categories || ['misc'])[0];
         const primary = primaryAnimal(entry) || {};
         const isWildlife = section === 'wildlife';
+        const pending = !(entry.scene || '').trim();
         return \`
           <div class="photo" data-filename="\${escapeHtml(filename)}">
             <img class="photo__thumb" src="/photo/\${section}/\${encodeURIComponent(filename)}" alt="" loading="lazy" />
@@ -709,6 +890,7 @@ const HTML = `<!doctype html>
               <div class="photo__head">
                 <span class="photo__filename">\${escapeHtml(filename)}</span>
                 <span class="section-tag">\${section}</span>
+                \${pending ? '<span class="pending-tag">unclassified</span>' : ''}
               </div>
               <div class="field--readonly">
                 <span>📅 \${escapeHtml(entry.date || '—')}</span>
@@ -735,6 +917,11 @@ const HTML = `<!doctype html>
                 <textarea data-field="notes">\${escapeHtml(entry.notes || '')}</textarea>
               </div>
               <div class="save-status"></div>
+              <div class="photo__actions">
+                <button type="button" class="btn-reclassify">Re-classify</button>
+                <button type="button" class="btn-delete">Delete photo</button>
+                <span class="action-status"></span>
+              </div>
             </div>
           </div>
         \`;
@@ -745,7 +932,57 @@ const HTML = `<!doctype html>
         card.querySelectorAll('[data-field]').forEach(field => {
           field.addEventListener('blur', () => save(card, filename, field));
         });
+        card.querySelector('.btn-reclassify').addEventListener('click', () => reclassify(card, filename));
+        card.querySelector('.btn-delete').addEventListener('click', () => removePhoto(card, filename));
       });
+    }
+
+    async function reclassify(card, filename) {
+      const status = card.querySelector('.action-status');
+      const buttons = card.querySelectorAll('.photo__actions button');
+      buttons.forEach(b => b.disabled = true);
+      status.textContent = 'Re-classifying via Claude…';
+      status.className = 'action-status busy';
+      try {
+        const res = await fetch('/api/photos/' + encodeURIComponent(filename) + '/reclassify', {
+          method: 'POST',
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || ('reclassify failed (' + res.status + ')'));
+        }
+        const json = await res.json();
+        data[filename] = json.entry;
+        status.textContent = '✓ Re-classified';
+        status.className = 'action-status ok';
+        setTimeout(() => render(), 600);
+      } catch (err) {
+        status.textContent = '✗ ' + err.message;
+        status.className = 'action-status err';
+        buttons.forEach(b => b.disabled = false);
+      }
+    }
+
+    async function removePhoto(card, filename) {
+      if (!confirm('Delete ' + filename + '?\\n\\nThis removes the JPEG from disk and clears its entries — cannot be undone.')) return;
+      const status = card.querySelector('.action-status');
+      const buttons = card.querySelectorAll('.photo__actions button');
+      buttons.forEach(b => b.disabled = true);
+      status.textContent = 'Deleting…';
+      status.className = 'action-status busy';
+      try {
+        const res = await fetch('/api/photos/' + encodeURIComponent(filename), { method: 'DELETE' });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || ('delete failed (' + res.status + ')'));
+        }
+        delete data[filename];
+        render();
+      } catch (err) {
+        status.textContent = '✗ ' + err.message;
+        status.className = 'action-status err';
+        buttons.forEach(b => b.disabled = false);
+      }
     }
     function readCurrent(filename) {
       const entry = data[filename] || {};
@@ -925,8 +1162,81 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === 'DELETE' && url.pathname.startsWith('/api/photos/')) {
+      const filename = decodeURIComponent(url.pathname.slice('/api/photos/'.length));
+      await withWriteLock(async () => {
+        const data = await loadAnimalIds();
+        const entry = data[filename];
+        if (!entry) {
+          res.writeHead(404);
+          res.end('not found');
+          return;
+        }
+        const section = sectionOf(entry);
+        if (section) {
+          const filePath = path.join(PHOTO_DIR, section, filename);
+          try {
+            await fs.unlink(filePath);
+          } catch (err) {
+            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+          }
+          thumbCache.delete(`${section}/${filename}`);
+
+          const decisions = await loadDecisions(section);
+          if (filename in decisions) {
+            delete decisions[filename];
+            await saveDecisions(section, decisions);
+          }
+        }
+        delete data[filename];
+        await saveAnimalIds(data);
+        scheduleRebuild();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, filename }));
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname.match(/^\/api\/photos\/.+\/reclassify$/)) {
+      const filename = decodeURIComponent(
+        url.pathname.slice('/api/photos/'.length, -'/reclassify'.length),
+      );
+      if (!anthropic) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY not set' }));
+        return;
+      }
+      await withWriteLock(async () => {
+        const data = await loadAnimalIds();
+        const entry = data[filename];
+        if (!entry) {
+          res.writeHead(404);
+          res.end('not found');
+          return;
+        }
+        const section = sectionOf(entry);
+        if (!section) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'entry has no wildlife/misc category' }));
+          return;
+        }
+        try {
+          const buffer = await fs.readFile(path.join(PHOTO_DIR, section, filename));
+          await applyClassification(entry, buffer, section);
+          await saveAnimalIds(data);
+          scheduleRebuild();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, entry }));
+        } catch (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: (err as Error).message }));
+        }
+      });
+      return;
+    }
+
     if (req.method === 'POST' && url.pathname === '/api/upload') {
-      await withUploadLock(async () => {
+      await withWriteLock(async () => {
         const { files, fields } = await parseMultipart(req);
         if (files.length === 0) throw new Error('no file in form');
         const section = fields.section as Section;
@@ -972,20 +1282,7 @@ const server = http.createServer(async (req, res) => {
 
         if (anthropic) {
           try {
-            const ai = await classifyImage(buffer, section);
-            entry.scene = ai.scene;
-            entry.confidence = ai.confidence;
-            entry.notes = ai.notes || null;
-            if (section === 'wildlife' && ai.common_name) {
-              entry.animals = [
-                {
-                  common_name: ai.common_name,
-                  scientific_name: ai.scientific_name ?? '',
-                  subject: 'primary',
-                  notes: '',
-                },
-              ];
-            }
+            await applyClassification(entry, buffer, section);
           } catch (err) {
             console.warn(`[upload] classify failed for ${finalName}:`, (err as Error).message);
           }
@@ -1063,4 +1360,7 @@ server.listen(PORT, () => {
   console.log('     Ctrl+C to stop.');
   console.log('');
   exec(`open "${url}"`).catch(() => undefined);
+  classifyPendingInBackground().catch((err) =>
+    console.warn('[edit-captions] pending classify pass failed:', (err as Error).message),
+  );
 });
